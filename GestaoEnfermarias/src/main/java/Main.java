@@ -137,7 +137,7 @@ public class Main {
         System.out.println("\nINDICADORES DE OCUPAÇÃO");
         System.out.println("Introduza a data de referência (AAAA-MM-DD): ");
         String dataReferenciaStr = scanner.nextLine();
-        Data dataReferencia = Data.parseData(dataReferenciaStr);
+        Data dataReferencia = DataAvancada.parseData(dataReferenciaStr);
 
 
         int ocupacao = enfermaria.calcularOcupacao(dataReferencia);
@@ -216,8 +216,8 @@ public class Main {
         String dataInicioStr = scanner.nextLine();
         System.out.println("Introduza data de fim (AAAA-MM-DD): ");
         String dataFimStr = scanner.nextLine();
-        Data dataInicio = Data.parseData(dataInicioStr);
-        Data dataFim = Data.parseData(dataFimStr);
+        Data dataInicio = DataAvancada.parseData(dataInicioStr);
+        Data dataFim = DataAvancada.parseData(dataFimStr);
 
         if (!dataFim.isMaior(dataInicio) && !dataFim.equals(dataInicio)) {
             System.out.println("Erro: a data de fim tem de ser posterior à data de início.");
@@ -225,7 +225,7 @@ public class Main {
         }
 
         int totalDias = dataFim.calcularDiferenca(dataInicio) + 1;
-        Data dataAtual = new Data(dataInicio); //cópia da data inicial
+        DataAvancada dataAtual = new DataAvancada(dataInicio); //cópia da data inicial
         int diasEmPressao = 0;
 
         System.out.println("\n --- Histórico de Ocupação---");
@@ -260,7 +260,7 @@ public class Main {
             case 1:
                 System.out.println("Introduza a data de referência (AAAA-MM-DD): ");
                 String dataReferenciaStr = scanner.nextLine();
-                Data dataReferencia = Data.parseData(dataReferenciaStr);
+                Data dataReferencia = DataAvancada.parseData(dataReferenciaStr);
 
                 List<Enfermaria> ordenadas = hospital.listarEnfermariasOrdenadasPorOcupacao(dataReferencia);
                 System.out.println("\n--- Enfermarias Ordenadas (Ocupação Decrescente) ---");
