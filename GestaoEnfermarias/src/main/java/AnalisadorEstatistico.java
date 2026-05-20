@@ -2,20 +2,25 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Classe com métodos estáticos para análise das enfermarias do hospital.
+ * Requisitos Funcionais 4, 5 e 6 da Iteração II.
+ */
 public class AnalisadorEstatistico {
 
     /**
      * Req. Funcional 4 — Alteração percentual de camas.
-     * Altera o número de camas de todas as enfermarias com base numa percentagem (ex: 10 para +10%, -20 para -20%).
      */
     public static void alterarCamas(List<Enfermaria> enfermarias, double percentagem) {
+        if (enfermarias == null) {
+            return;
+        }
+
         for (Enfermaria enfermaria : enfermarias) {
-            // Calcula as novas camas e arredonda para o inteiro mais próximo
             int novasCamas = (int) Math.round(enfermaria.getNumCamas() * (1 + (percentagem / 100.0)));
 
-            // Garante que o número de camas nunca é negativo
-            if (novasCamas < 0) {
-                novasCamas = 0;
+            if (novasCamas < 1) {
+                novasCamas = 1;
             }
             enfermaria.setNumCamas(novasCamas);
         }
@@ -23,10 +28,11 @@ public class AnalisadorEstatistico {
 
     /**
      * Req. Funcional 5 — Percentagem de Enfermarias em pressão.
-     * Devolve a percentagem de enfermarias que estão com taxa de ocupação > 85% numa certa data.
      */
     public static double calcularPercentagemEnfermariasEmPressao(List<Enfermaria> enfermarias, Data dataReferencia) {
-        if (enfermarias.isEmpty()) return 0.0;
+        if (enfermarias == null || enfermarias.isEmpty()) {
+            return 0.0;
+        }
 
         int countPressao = 0;
         for (Enfermaria enfermaria : enfermarias) {
@@ -41,38 +47,53 @@ public class AnalisadorEstatistico {
      * Classe auxiliar (Nested Class) para guardar os resultados do Índice de Pressão e permitir a ordenação.
      */
     public static class ResultadoPressao implements Comparable<ResultadoPressao> {
-        public Enfermaria enfermaria;
-        public double indice;
-        public String classificacao;
+        private Enfermaria enfermaria;
+        private int scoreOcup;
+        private int scoreTurnover;
+        private double indicePressao;
+        private String classificacao;
 
-        public ResultadoPressao(Enfermaria enfermaria, double indice, String classificacao) {
+        public ResultadoPressao(Enfermaria enfermaria, int scoreOcup, int scoreTurnover, double indicePressao, String classificacao) {
             this.enfermaria = enfermaria;
-            this.indice = indice;
+            this.scoreOcup = scoreOcup;
+            this.scoreTurnover = scoreTurnover;
+            this.indicePressao = indicePressao;
             this.classificacao = classificacao;
         }
+
+        // --- GETTERS NECESSÁRIOS PARA OS TESTES ---
+        public Enfermaria getEnfermaria() { return enfermaria; }
+        public int getScoreOcup() { return scoreOcup; }
+        public int getScoreTurnover() { return scoreTurnover; }
+        public double getIndicePressao() { return indicePressao; }
+        public String getClassificacao() { return classificacao; }
+        // ------------------------------------------
 
         // Ordenação Decrescente pelo Índice
         @Override
         public int compareTo(ResultadoPressao outro) {
-            return Double.compare(outro.indice, this.indice);
+            return Double.compare(outro.indicePressao, this.indicePressao);
         }
 
         @Override
         public String toString() {
-            return String.format("Enfermaria: %s | Índice: %.1f | Classificação: %s",
-                    enfermaria.getIdEnfermaria(), indice, classificacao);
+            return String.format("Enfermaria: %-8s | scoreOcup=%d | scoreTurnover=%d | índice=%.1f | %s",
+                    enfermaria.getIdEnfermaria(), scoreOcup, scoreTurnover, indicePressao, classificacao);
         }
     }
 
     /**
      * Req. Funcional 6 — Índice de Pressão e Ranking.
-     * Calcula o Índice de Pressão e devolve uma lista ordenada descrescentemente.
      */
     public static List<ResultadoPressao> calcularRankingPressao(List<Enfermaria> enfermarias, Data dataReferencia) {
         List<ResultadoPressao> ranking = new ArrayList<>();
 
+        if (enfermarias == null || enfermarias.isEmpty()) {
+            return ranking;
+        }
+
         for (Enfermaria enfermaria : enfermarias) {
-            if (enfermaria.getNumCamas() == 0) continue; // Evita divisão por zero
+            if (enfermaria.getNumCamas() == 0) continue;
 
             // 1. Componente Ocupação (70%)
             double percOcup = enfermaria.calcularTaxaOcupacao(dataReferencia);
@@ -84,7 +105,6 @@ public class AnalisadorEstatistico {
             else scoreOcup = 5;
 
             // 2. Componente Turnover (30%)
-            // Contabiliza admissões e altas que ocorreram até à data de referência (inclusive)
             int admissoes = 0;
             int altas = 0;
             for (Episodio ep : enfermaria.getEpisodios()) {
@@ -104,7 +124,7 @@ public class AnalisadorEstatistico {
             else if (percTurnover <= 40) scoreTurnover = 4;
             else scoreTurnover = 5;
 
-            // 3. Cálculo do Índice Final (com arredondamento a 1 casa decimal)
+            // 3. Cálculo do Índice Final
             double indiceFinal = (0.7 * scoreOcup) + (0.3 * scoreTurnover);
             indiceFinal = Math.round(indiceFinal * 10.0) / 10.0;
 
@@ -115,10 +135,10 @@ public class AnalisadorEstatistico {
             else classificacao = "Pressão Alta";
 
             // Adiciona à lista
-            ranking.add(new ResultadoPressao(enfermaria, indiceFinal, classificacao));
+            ranking.add(new ResultadoPressao(enfermaria, scoreOcup, scoreTurnover, indiceFinal, classificacao));
         }
 
-        // Ordena a lista (baseado no compareTo que definimos como decrescente)
+        // Ordena a lista de forma decrescente através do Collections Framework
         Collections.sort(ranking);
 
         return ranking;

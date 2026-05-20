@@ -1,4 +1,8 @@
-public class Data {
+/**
+ * Classe para representação e manipulação de datas.
+ * Implementa a interface Comparable para permitir a ordenação cronológica.
+ */
+public class Data implements Comparable<Data> {
 
     /**
      * O ano da data.
@@ -41,7 +45,7 @@ public class Data {
     /**
      * Número de dias de cada mês do ano.
      */
-    private static int[] diasPorMes = {  0, 31, 28, 31, 30, 31, 30, 31, 31, 30,
+    private static int[] diasPorMes = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30,
             31, 30, 31};
 
     /**
@@ -56,7 +60,7 @@ public class Data {
      * Constrói uma instância de Data recebendo o ano, o mês e o dia.
      *
      * @param ano o ano da data
-     * @param mes o mÃªs da data
+     * @param mes o mês da data
      * @param dia o dia da data
      */
     public Data(int ano, int mes, int dia) {
@@ -64,23 +68,32 @@ public class Data {
         this.mes = mes;
         this.dia = dia;
     }
+
     /**
-     * Constrói uma instância de Data com a data por omissÃ£o.
+     * Constrói uma instância de Data duplicando outra data (Construtor de cópia).
+     *
+     * @param outraData a data a copiar
      */
-    public Data(Data data) {
-        ano = data.ano;
-        mes = data.mes;
-        dia = data.dia;
-    }
-    /**
-     * Constrói uma instância de Data com a data por omissÃ£o.
-     */
-    public Data() {
-        ano = ANO_POR_OMISSAO;
-        mes = MES_POR_OMISSAO;
-        dia = DIA_POR_OMISSAO;
+    public Data(Data outraData) {
+        if (outraData != null) {
+            this.ano = outraData.ano;
+            this.mes = outraData.mes;
+            this.dia = outraData.dia;
+        } else {
+            this.ano = ANO_POR_OMISSAO;
+            this.mes = MES_POR_OMISSAO;
+            this.dia = DIA_POR_OMISSAO;
+        }
     }
 
+    /**
+     * Constrói uma instância de Data com a data por omissão (1/1/1).
+     */
+    public Data() {
+        this.ano = ANO_POR_OMISSAO;
+        this.mes = MES_POR_OMISSAO;
+        this.dia = DIA_POR_OMISSAO;
+    }
 
     /**
      * Devolve o ano da data.
@@ -110,7 +123,7 @@ public class Data {
     }
 
     /**
-     * Modifica o ano, o mÃªs e o dia da data.
+     * Modifica o ano, o mês e o dia da data.
      *
      * @param ano o novo ano da data
      * @param mes o novo mês da data
@@ -125,16 +138,17 @@ public class Data {
     /**
      * Devolve a descrição textual da data no formato: diaDaSemana, dia, mês, ano.
      *
-     * @return caraterÃ­sticas da data
+     * @return características da data em formato extenso
      */
+    @Override
     public String toString() {
         return this.determinarDiaDaSemana() + ", " + this.dia + " de " + nomeMes[mes] + " de " + ano;
     }
 
     /**
-     * Devolve a data no formato:%04d/%02d/%02d.
+     * Devolve a data no formato: AAAA/MM/DD.
      *
-     * @return caraterísticas da data
+     * @return string formatada da data
      */
     public String toAnoMesDiaString() {
         return String.format("%04d/%02d/%02d", ano, mes, dia);
@@ -148,79 +162,55 @@ public class Data {
     public String determinarDiaDaSemana() {
         int totalDias = contarDias();
         totalDias = totalDias % 7;
-
         return nomeDiaDaSemana[totalDias];
     }
 
     /**
-     * Devolve true se a data for maior do que a data recebida por parÃ¢metro.
-     * Se a data for menor ou igual Ã  data recebida por parÃ¢metro, devolve
-     * false.
+     * Devolve true se a data for estritamente maior do que a outra data recebida por parâmetro.
      *
-     * @param outraData a outra data com a qual se compara a data
-     * @return true se a data for maior do que a data recebida por parÃ¢metro,
-     *         caso contrÃ¡rio devolve false
+     * @param outraData a outra data com a qual se compara
+     * @return true se for maior, caso contrário false
      */
     public boolean isMaior(Data outraData) {
-        int totalDias = contarDias();
-        int totalDias1 = outraData.contarDias();
-
-        return totalDias > totalDias1;
+        if (outraData == null) {
+            return true;
+        }
+        return this.contarDias() > outraData.contarDias();
     }
 
     /**
-     * Devolve a diferença em número de dias entre a data e a data recebida por
-     * parâmetro.
+     * Devolve a diferença absoluta em número de dias entre a data e a outra data recebida por parâmetro.
      *
-     * @param outraData a outra data com a qual se compara a data para calcular
-     *        a diferença do número de dias
-     * @return diferença em número de dias entre a data e a data recebida por
-     *         parâmetro
+     * @param outraData a outra data com a qual se compara
+     * @return diferença absoluta em dias
      */
     public int calcularDiferenca(Data outraData) {
-        int totalDias = this.contarDias();
-        int totalDias1 = outraData.contarDias();
-
-        return Math.abs(totalDias - totalDias1);
+        if (outraData == null) {
+            return 0;
+        }
+        return Math.abs(this.contarDias() - outraData.contarDias());
     }
 
     /**
-     * Devolve a diferenÃ§a em número de dias entre a data e a data recebida por
-     * parâmetro com ano, mês e dia
-     *
-     * @param ano o ano da data com a qual se compara a data para calcular a
-     *        diferença do número de dias
-     * @param mes o mês da data com a qual se compara a data para calcular a
-     *        diferença do número de dias
-     * @param dia o dia da data com a qual se compara a data para calcular a
-     *        diferença do número de dias
-     * @return diferença em número de dias entre a data e a data recebida por
-     *         parâmetro com ano, mês e dia
+     * Devolve a diferença absoluta em número de dias entre a data e uma data definida por inteiros.
      */
     public int calcularDiferenca(int ano, int mes, int dia) {
-        int totalDias = contarDias();
         Data outraData = new Data(ano, mes, dia);
-        int totalDias1 = outraData.contarDias();
-
-        return Math.abs(totalDias - totalDias1);
+        return Math.abs(this.contarDias() - outraData.contarDias());
     }
 
     /**
      * Devolve true se o ano passado por parâmetro for bissexto.
-     * Se o ano passado por parâmetro não for bissexto, devolve false.
      *
      * @param ano o ano a validar
-     * @return true se o ano passado por parâmetro for bissexto, caso contrário
-     *         devolve false
+     * @return true se for bissexto, caso contrário false
      */
     public static boolean isAnoBissexto(int ano) {
-        return ano % 4 == 0 && ano % 100 != 0 || ano % 400 == 0;
+        return (ano % 4 == 0 && ano % 100 != 0) || (ano % 400 == 0);
     }
 
     /**
-     * Devolve o número de dias desde o dia 1/1/1 até à  data.
-     *
-     * @return número de dias desde o dia 1/1/1 até à  data
+     * Devolve o número total de dias desde o dia 1/1/1 até à data atual.
      */
     private int contarDias() {
         int totalDias = 0;
@@ -237,6 +227,32 @@ public class Data {
         return totalDias;
     }
 
+    /**
+     * Incrementa a data em exatamente um dia, gerindo de forma automática a passagem
+     * de meses e anos (incluindo as especificidades dos anos bissextos).
+     */
+    public void avancarUmDia() {
+        int diasDoMes = diasPorMes[mes];
+
+        if (mes == 2 && isAnoBissexto(ano)) {
+            diasDoMes = 29;
+        }
+
+        if (dia < diasDoMes) {
+            dia++;
+        } else if (mes < 12) {
+            dia = 1;
+            mes++;
+        } else {
+            dia = 1;
+            mes = 1;
+            ano++;
+        }
+    }
+
+    /**
+     * Compara se este objeto de data é idêntico a outro objeto passado.
+     */
     @Override
     public boolean equals(Object outroObjeto) {
         if (this == outroObjeto) {
@@ -246,26 +262,39 @@ public class Data {
             return false;
         }
         final Data other = (Data) outroObjeto;
-        if (this.ano != other.ano) {
-            return false;
-        }
-        if (this.mes != other.mes) {
-            return false;
-        }
-        if (this.dia != other.dia) {
-            return false;
-        }
-        return true;
+        return this.ano == other.ano && this.mes == other.mes && this.dia == other.dia;
     }
-    public int compareTo(Object data){
-        Data d = (Data)data;
-        if (this.isMaior(d))
+
+    /**
+     * Implementação obrigatória da interface Comparable para ordenação cronológica.
+     * Devolve 1 se for posterior, -1 se for anterior e 0 se for idêntica.
+     */
+    @Override
+    public int compareTo(Data outraData) {
+        if (this.isMaior(outraData)) {
             return 1;
-        else if (this.equals(d))
+        } else if (this.equals(outraData)) {
             return 0;
-        else
+        } else {
             return -1;
+        }
+    }
+
+    /**
+     * Converte uma representação textual de uma data no formato ISO (AAAA-MM-DD)
+     * num objeto estruturado da classe Data.
+     *
+     * @param dataStr string da data (ex: "2026-05-20")
+     * @return uma nova instância da classe Data
+     */
+    public static Data parseData(String dataStr) {
+        if (dataStr == null || dataStr.trim().isEmpty()) {
+            return new Data();
+        }
+        String[] partes = dataStr.split("-");
+        int ano = Integer.parseInt(partes[0].trim());
+        int mes = Integer.parseInt(partes[1].trim());
+        int dia = Integer.parseInt(partes[2].trim());
+        return new Data(ano, mes, dia);
     }
 }
-
-
