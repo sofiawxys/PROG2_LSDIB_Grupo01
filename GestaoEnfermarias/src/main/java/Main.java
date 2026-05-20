@@ -31,7 +31,7 @@ public class Main {
 
             switch (opcao) {
                 case 1:
-                    criarDadosAutomaticamente(hospital);
+                    GeradorDados.criarDadosAutomaticos(hospital);
                     break;
                 case 2:
                     carregarDadosFicheiro(hospital);
@@ -71,50 +71,6 @@ public class Main {
     }
 
     /**
-     * Metodo que cria dados estáticos de enfermarias e episódios para possibilitar o teste das diferentes funcionalidades deste projeto rapidamente
-     *
-     * @param hospital -> nome do Hopsital
-     */
-    private static void criarDadosAutomaticamente(Hospital hospital) {
-        EnfermariaGeral eg1 = new EnfermariaGeral("eg1", 4, 2);
-        eg1.adicionarRecurso("Cadeira de rodas");
-        eg1.adicionarRecurso("Ventilador");
-
-        EnfermariaGeral eg2 = new EnfermariaGeral("eg2", 6, 1);
-        eg2.adicionarRecurso("Monitor cardíaco");
-
-        EnfermariaPsiquiatrica ep1 = new EnfermariaPsiquiatrica("ep1", 5, "9:00-11:00", "Alto");
-
-        EnfermariaCuidadosIntensivos eci1 = new EnfermariaCuidadosIntensivos("eci1", 9, "15:00-19:00", 730, 760);
-
-        // Adicionar enfermarias ao hospital
-        hospital.adicionarEnfermaria(eg1);
-        hospital.adicionarEnfermaria(eg2);
-        hospital.adicionarEnfermaria(ep1);
-        hospital.adicionarEnfermaria(eci1);
-
-        // Criar episódios — eg1
-        eg1.adicionarEpisodio(new Episodio(1, new Data(2025, 3, 1), new Data(2025, 3, 7)));
-        eg1.adicionarEpisodio(new Episodio(2, new Data(2025, 3, 3), new Data(2025, 3, 10)));
-        eg1.adicionarEpisodio(new Episodio(3, new Data(2025, 3, 5), new Data(2025, 3, 20)));
-        eg1.adicionarEpisodio(new Episodio(4, new Data(2025, 3, 18), null));
-
-        // Criar episódios — ep1 (100% ocupação)
-        ep1.adicionarEpisodio(new Episodio(1, new Data(2025, 3, 10), null));
-        ep1.adicionarEpisodio(new Episodio(2, new Data(2025, 3, 10), null));
-        ep1.adicionarEpisodio(new Episodio(3, new Data(2025, 3, 10), null));
-        ep1.adicionarEpisodio(new Episodio(4, new Data(2025, 3, 10), null));
-        ep1.adicionarEpisodio(new Episodio(5, new Data(2025, 3, 10), null));
-
-        // Criar episódios — eci1
-        eci1.adicionarEpisodio(new Episodio(1, new Data(2025, 3, 15), new Data(2025, 3, 18)));
-        eci1.adicionarEpisodio(new Episodio(2, new Data(2025, 3, 16), null));
-        eci1.adicionarEpisodio(new Episodio(3, new Data(2025, 3, 17), null));
-
-        System.out.println("Dados criados com sucesso!");
-    }
-
-    /**
      * Metodo que solicita uma enfermaria e uma data ao utlizador e apresenta as metricas de ocupacao e LoS
      *
      * @param hospital -> hospital desejado
@@ -137,7 +93,7 @@ public class Main {
         System.out.println("\nINDICADORES DE OCUPAÇÃO");
         System.out.println("Introduza a data de referência (AAAA-MM-DD): ");
         String dataReferenciaStr = scanner.nextLine();
-        Data dataReferencia = Data.parseData(dataReferenciaStr);
+        Data dataReferencia = DataAvancada.parseData(dataReferenciaStr);
 
 
         int ocupacao = enfermaria.calcularOcupacao(dataReferencia);
@@ -216,8 +172,8 @@ public class Main {
         String dataInicioStr = scanner.nextLine();
         System.out.println("Introduza data de fim (AAAA-MM-DD): ");
         String dataFimStr = scanner.nextLine();
-        Data dataInicio = Data.parseData(dataInicioStr);
-        Data dataFim = Data.parseData(dataFimStr);
+        Data dataInicio = DataAvancada.parseData(dataInicioStr);
+        Data dataFim = DataAvancada.parseData(dataFimStr);
 
         if (!dataFim.isMaior(dataInicio) && !dataFim.equals(dataInicio)) {
             System.out.println("Erro: a data de fim tem de ser posterior à data de início.");
@@ -225,7 +181,7 @@ public class Main {
         }
 
         int totalDias = dataFim.calcularDiferenca(dataInicio) + 1;
-        Data dataAtual = new Data(dataInicio); //cópia da data inicial
+        DataAvancada dataAtual = new DataAvancada(dataInicio); //cópia da data inicial
         int diasEmPressao = 0;
 
         System.out.println("\n --- Histórico de Ocupação---");
@@ -260,7 +216,7 @@ public class Main {
             case 1:
                 System.out.println("Introduza a data de referência (AAAA-MM-DD): ");
                 String dataReferenciaStr = scanner.nextLine();
-                Data dataReferencia = Data.parseData(dataReferenciaStr);
+                Data dataReferencia = DataAvancada.parseData(dataReferenciaStr);
 
                 List<Enfermaria> ordenadas = hospital.listarEnfermariasOrdenadasPorOcupacao(dataReferencia);
                 System.out.println("\n--- Enfermarias Ordenadas (Ocupação Decrescente) ---");
