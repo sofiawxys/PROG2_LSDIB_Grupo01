@@ -31,7 +31,11 @@ public class Main {
 
             switch (opcao) {
                 case 1:
-                    GeradorDados.criarDadosAutomaticos(hospital);
+                    try {
+                        GeradorDados.criarDadosAutomaticos(hospital);
+                    } catch (DataInvalidaException e) {
+                        System.out.println("Erro ao criar dados automáticos: " + e.getMessage());
+                    }
                     break;
                 case 2:
                     carregarDadosFicheiro(hospital);
