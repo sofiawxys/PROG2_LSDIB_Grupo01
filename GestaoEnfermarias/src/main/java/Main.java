@@ -31,7 +31,7 @@ public class Main {
 
             switch (opcao) {
                 case 1:
-                    GeradorDados.criarDadosAutomaticos(hospital);
+                    criarDadosAutomaticamente(hospital);
                     break;
                 case 2:
                     carregarDadosFicheiro(hospital);
@@ -71,6 +71,50 @@ public class Main {
     }
 
     /**
+     * Metodo que cria dados estáticos de enfermarias e episódios para possibilitar o teste das diferentes funcionalidades deste projeto rapidamente
+     *
+     * @param hospital -> nome do Hopsital
+     */
+    private static void criarDadosAutomaticamente(Hospital hospital) {
+        EnfermariaGeral eg1 = new EnfermariaGeral("eg1", 4, 2);
+        eg1.adicionarRecurso("Cadeira de rodas");
+        eg1.adicionarRecurso("Ventilador");
+
+        EnfermariaGeral eg2 = new EnfermariaGeral("eg2", 6, 1);
+        eg2.adicionarRecurso("Monitor cardíaco");
+
+        EnfermariaPsiquiatrica ep1 = new EnfermariaPsiquiatrica("ep1", 5, "9:00-11:00", "Alto");
+
+        EnfermariaCuidadosIntensivos eci1 = new EnfermariaCuidadosIntensivos("eci1", 9, "15:00-19:00", 730, 760);
+
+        // Adicionar enfermarias ao hospital
+        hospital.adicionarEnfermaria(eg1);
+        hospital.adicionarEnfermaria(eg2);
+        hospital.adicionarEnfermaria(ep1);
+        hospital.adicionarEnfermaria(eci1);
+
+        // Criar episódios — eg1
+        eg1.adicionarEpisodio(new Episodio(1, new Data(2025, 3, 1), new Data(2025, 3, 7)));
+        eg1.adicionarEpisodio(new Episodio(2, new Data(2025, 3, 3), new Data(2025, 3, 10)));
+        eg1.adicionarEpisodio(new Episodio(3, new Data(2025, 3, 5), new Data(2025, 3, 20)));
+        eg1.adicionarEpisodio(new Episodio(4, new Data(2025, 3, 18), null));
+
+        // Criar episódios — ep1 (100% ocupação)
+        ep1.adicionarEpisodio(new Episodio(1, new Data(2025, 3, 10), null));
+        ep1.adicionarEpisodio(new Episodio(2, new Data(2025, 3, 10), null));
+        ep1.adicionarEpisodio(new Episodio(3, new Data(2025, 3, 10), null));
+        ep1.adicionarEpisodio(new Episodio(4, new Data(2025, 3, 10), null));
+        ep1.adicionarEpisodio(new Episodio(5, new Data(2025, 3, 10), null));
+
+        // Criar episódios — eci1
+        eci1.adicionarEpisodio(new Episodio(1, new Data(2025, 3, 15), new Data(2025, 3, 18)));
+        eci1.adicionarEpisodio(new Episodio(2, new Data(2025, 3, 16), null));
+        eci1.adicionarEpisodio(new Episodio(3, new Data(2025, 3, 17), null));
+
+        System.out.println("Dados criados com sucesso!");
+    }
+
+    /**
      * Metodo que solicita uma enfermaria e uma data ao utlizador e apresenta as metricas de ocupacao e LoS
      *
      * @param hospital -> hospital desejado
@@ -93,7 +137,7 @@ public class Main {
         System.out.println("\nINDICADORES DE OCUPAÇÃO");
         System.out.println("Introduza a data de referência (AAAA-MM-DD): ");
         String dataReferenciaStr = scanner.nextLine();
-        Data dataReferencia = DataAvancada.parseData(dataReferenciaStr);
+        Data dataReferencia = Data.parseData(dataReferenciaStr);
 
 
         int ocupacao = enfermaria.calcularOcupacao(dataReferencia);
@@ -172,8 +216,8 @@ public class Main {
         String dataInicioStr = scanner.nextLine();
         System.out.println("Introduza data de fim (AAAA-MM-DD): ");
         String dataFimStr = scanner.nextLine();
-        Data dataInicio = DataAvancada.parseData(dataInicioStr);
-        Data dataFim = DataAvancada.parseData(dataFimStr);
+        Data dataInicio = Data.parseData(dataInicioStr);
+        Data dataFim = Data.parseData(dataFimStr);
 
         if (!dataFim.isMaior(dataInicio) && !dataFim.equals(dataInicio)) {
             System.out.println("Erro: a data de fim tem de ser posterior à data de início.");
@@ -181,7 +225,7 @@ public class Main {
         }
 
         int totalDias = dataFim.calcularDiferenca(dataInicio) + 1;
-        DataAvancada dataAtual = new DataAvancada(dataInicio); //cópia da data inicial
+        Data dataAtual = new Data(dataInicio); //cópia da data inicial
         int diasEmPressao = 0;
 
         System.out.println("\n --- Histórico de Ocupação---");
@@ -216,7 +260,7 @@ public class Main {
             case 1:
                 System.out.println("Introduza a data de referência (AAAA-MM-DD): ");
                 String dataReferenciaStr = scanner.nextLine();
-                Data dataReferencia = DataAvancada.parseData(dataReferenciaStr);
+                Data dataReferencia = Data.parseData(dataReferenciaStr);
 
                 List<Enfermaria> ordenadas = hospital.listarEnfermariasOrdenadasPorOcupacao(dataReferencia);
                 System.out.println("\n--- Enfermarias Ordenadas (Ocupação Decrescente) ---");
@@ -254,6 +298,65 @@ public class Main {
                 }
                 break;
         }
+    }
+    private static void mostrarTabelaOcupacao(Hospital hospital, Scanner scanner) {
+
+        System.out.print("Introduza o ID da enfermaria: ");
+        String idEnfermaria = scanner.nextLine();
+        Enfermaria enfermaria = hospital.procurarEnfermaria(idEnfermaria);
+
+        if (enfermaria == null) {
+            System.out.println("Enfermaria não encontrada.");
+            return;
+        }
+
+        System.out.print("Data de início (AAAA-MM-DD): ");
+        Data dataInicio = Data.parseData(scanner.nextLine());
+
+        System.out.print("Data de fim (AAAA-MM-DD): ");
+        Data dataFim = Data.parseData(scanner.nextLine());
+
+        // Cabeçalho da tabela
+        System.out.println();
+        System.out.printf("%-12s | %-12s | %8s | %11s | %6s | %9s | %s%n",
+                "Enfermaria", "Data", "Ocupadas", "CamasTotais", "%Ocup", "Turnover%", "Barra");
+        System.out.println("-".repeat(90));
+
+        // Percorrer cada dia do intervalo
+        int totalDias = UtilitariosData.calcularDiferenca(dataInicio, dataFim) + 1;
+        Data dataAtual = new Data(dataInicio);
+
+        for (int i = 0; i < totalDias; i++) {
+            int ocupadas    = enfermaria.calcularOcupacao(dataAtual);
+            int totalCamas  = enfermaria.getNumCamas();
+            double percOcup = enfermaria.calcularTaxaOcupacao(dataAtual);
+            int admissoes   = enfermaria.calcularAdmissoes(dataAtual);
+            int altas       = enfermaria.calcularAltas(dataAtual);
+            double turnover = (double)(admissoes + altas) / totalCamas * 100;
+            String barra    = gerarBarraHorizontal(percOcup, '#');
+
+            System.out.printf("%-12s | %-12s | %8d | %11d | %5.1f%% | %8.1f%% | %s%n",
+                    enfermaria.getIdEnfermaria(),
+                    dataAtual.toAnoMesDiaString(),
+                    ocupadas,
+                    totalCamas,
+                    percOcup,
+                    turnover,
+                    barra);
+
+            UtilitariosData.avancarUmDia(dataAtual);
+        }
+    }
+    private static String gerarBarraHorizontal(double taxa, char simbolo) {
+        // 50 caracteres = 100%, por isso: taxa * 50 / 100
+        int preenchidos = (int) (taxa * 50 / 100);
+        // Garantir que não ultrapassa 50
+        if (preenchidos > 50) preenchidos = 50;
+        int vazios = 50 - preenchidos;
+
+        String barra = String.valueOf(simbolo).repeat(preenchidos)
+                + " ".repeat(vazios);
+        return "[" + barra + "]";
     }
 
 

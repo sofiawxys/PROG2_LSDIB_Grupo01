@@ -238,6 +238,26 @@ public abstract class Enfermaria implements GestaoOcupacao {
         return maxLoS;
     }
 
+    public int calcularAdmissoes(Data dataReferencia) {
+        int admissoes = 0;
+        for (Episodio ep : episodios) {
+            if (ep.getDataAdmissao().equals(dataReferencia)) {
+                admissoes++;
+            }
+        }
+        return admissoes;
+    }
+
+    public int calcularAltas(Data dataReferencia) {
+        int altas = 0;
+        for (Episodio ep : episodios) {
+            if (ep.isFlagAlta() && ep.getDataAlta().equals(dataReferencia)) {
+                altas++;
+            }
+        }
+        return altas;
+    }
+
 }
 
 
