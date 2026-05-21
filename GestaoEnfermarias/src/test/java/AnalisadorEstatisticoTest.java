@@ -284,7 +284,7 @@ class AnalisadorEstatisticoTest {
     @Test
     @DisplayName("IT1 — parseData() converte string AAAA-MM-DD")
     void testData_parseData() {
-        Data d = Data.parseData("2025-03-20");
+        Data d = DataAvancada.parseData("2025-03-20");
         assertEquals(2025, d.getAno());
         assertEquals(3,    d.getMes());
         assertEquals(20,   d.getDia());
@@ -293,7 +293,7 @@ class AnalisadorEstatisticoTest {
     @Test
     @DisplayName("IT1 — avancarUmDia() passa para o mês seguinte no fim do mês")
     void testData_avancarMes() {
-        Data d = new Data(2025, 3, 31);
+        DataAvancada d = new DataAvancada(2025, 3, 31);
         d.avancarUmDia();
         assertEquals(4, d.getMes());
         assertEquals(1, d.getDia());
@@ -302,7 +302,7 @@ class AnalisadorEstatisticoTest {
     @Test
     @DisplayName("IT1 — avancarUmDia() gere corretamente o ano bissexto")
     void testData_bissexto() {
-        Data d = new Data(2024, 2, 28);
+        DataAvancada d = new DataAvancada(2024, 2, 28);
         d.avancarUmDia();
         assertEquals(29, d.getDia());
     }
