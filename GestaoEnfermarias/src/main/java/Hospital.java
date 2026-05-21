@@ -142,8 +142,11 @@ public class Hospital {
                 }
             }
         }
+        try{
         Episodio ep = new Episodio(idCama, dataAdmissao, dataAlta);
         enfermaria.adicionarEpisodio(ep);
+    } catch (Exception e) {
+        registoErros.add("Erro ao carregar episodio: " + linha + " -> " + e.getMessage());}
     }
 
     /**

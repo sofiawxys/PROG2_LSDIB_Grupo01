@@ -20,15 +20,13 @@ public class Episodio {
      * @param dataAdmissao -> data de admissao do paciente na enfermaria
      * @param dataAlta     -> data de alta do paciente da enfermaria
      */
-    public Episodio(int idCama, Data dataAdmissao, Data dataAlta) {
+    public Episodio(int idCama, Data dataAdmissao, Data dataAlta) throws DataInvalidaException {
         this.idCama = idCama;
         //Encapsulamento: guardar uma cópia da data
         this.dataAdmissao = new Data(dataAdmissao);
         if (dataAlta != null) {
             if (dataAdmissao.isMaior(dataAlta)) {
-                System.out.println("Data inválida. Episódio considerado como ativo, se quiser mude a data de alta.");
-                this.dataAlta = null;
-                this.flagAlta = false;
+                throw new DataInvalidaException("Erro: A data de alta não pode ser anterior à de admissão.");
             } else {
                 this.dataAlta = new Data(dataAlta); //cópia da data de alta
                 this.flagAlta = true;
@@ -123,7 +121,10 @@ public class Episodio {
      *
      * @param d -> data de admissao
      */
-    public void setDataAdmissao(Data d) {
+    public void setDataAdmissao(Data d) throws DataInvalidaException {
+        if (this.dataAlta != null && d.isMaior(this.dataAlta)) {
+            throw new DataInvalidaException("Erro: A nova data de admissão não pode ser posterior à data de alta já registada.");
+        }
         this.dataAdmissao = new Data(d); //guarda cópia defensiva
         calcularLoS();
     }
@@ -133,7 +134,10 @@ public class Episodio {
      *
      * @param dataAlta -> data de alta
      */
-    public void setDataAlta(Data dataAlta) {
+    public void setDataAlta(Data dataAlta) throws DataInvalidaException {
+        if (dataAlta != null && dataAdmissao.isMaior(dataAlta)) {
+            throw new DataInvalidaException("Erro: A nova data de alta não pode ser anterior à data de admissão já registada.");
+        }
         this.dataAlta = new Data(dataAlta); // guarda cópia defensiva
         this.flagAlta = (dataAlta != null);
         calcularLoS(); //recalcular

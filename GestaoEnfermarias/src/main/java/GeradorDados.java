@@ -1,5 +1,5 @@
 public class GeradorDados {
-    public static void criarDadosAutomaticos(Hospital hospital){
+    public static void criarDadosAutomaticos(Hospital hospital) throws DataInvalidaException{
         EnfermariaGeral eg1 = new EnfermariaGeral("eg1", 4, 2);
         eg1.adicionarRecurso("Cadeira de rodas");
         eg1.adicionarRecurso("Ventilador");
