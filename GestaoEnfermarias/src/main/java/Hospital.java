@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
 
+
 /**
  * Entidade central do programa que representa o complexo hospitalar
  * Responsavel por gerir a lista de todas as enfermarias, processar o carregamento de dados a partir de ficheiros CSV, manter um log de erros

@@ -35,6 +35,8 @@ public class Main {
                         GeradorDados.criarDadosAutomaticos(hospital);
                     } catch (DataInvalidaException e) {
                         System.out.println("Erro ao criar dados automáticos: " + e.getMessage());
+                    } catch (CapacidadeExcedidaException e){
+                        System.out.println("Erro de lotação na geração automática: " + e.getMessage());
                     }
                     break;
                 case 2:

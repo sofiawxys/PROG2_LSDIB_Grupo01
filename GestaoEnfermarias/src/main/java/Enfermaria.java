@@ -88,8 +88,12 @@ public abstract class Enfermaria implements GestaoOcupacao {
      *
      * @param episodio -> episodio a adicionar ao historico da enfermaria
      */
-    public void adicionarEpisodio(Episodio episodio) {
-        this.episodios.add(episodio);
+    public void adicionarEpisodio(Episodio episodio) throws CapacidadeExcedidaException{
+       int camasOcupadasNaData = this.calcularOcupacao(episodio.getDataAdmissao());
+       if (camasOcupadasNaData >= this.numCamas) {
+           throw new CapacidadeExcedidaException("Erro: A enfermaria " + this.idEnfermaria + " já tem " + this.numCamas + " camas ocupadas na data,o que corresponde à sua capacidade máxima.");
+       }
+       this.episodios.add(episodio);
     }
 
     /**
