@@ -20,7 +20,7 @@ class AnalisadorEstatisticoTest {
     private EnfermariaPsiquiatrica ep1;
 
     @BeforeEach
-    void setUp() throws  DataInvalidaException {
+    void setUp() throws  DataInvalidaException, CapacidadeExcedidaException {
         dataRef = new Data(2025, 3, 20);
 
         eg1 = new EnfermariaGeral("eg1", 4, 2);
