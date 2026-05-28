@@ -362,7 +362,23 @@ public class Main {
                 break;
         }
     }
+    private static void mostrarTabelaOcupacao(Hospital hospital, Scanner scanner) {
+        System.out.print("ID da enfermaria: ");
+        String idEnfermaria = scanner.nextLine();
+        Enfermaria enfermaria = hospital.procurarEnfermaria(idEnfermaria);
 
+        if (enfermaria == null) {
+            System.out.println("Enfermaria não encontrada.");
+            return;
+        }
+
+        System.out.print("Data de início (AAAA-MM-DD): ");
+        DataAvancada dataInicio = DataAvancada.parseData(scanner.nextLine());
+        System.out.print("Data de fim (AAAA-MM-DD): ");
+        DataAvancada dataFim = DataAvancada.parseData(scanner.nextLine());
+
+
+    }
 
 
 //MÉTODOS AUXILIARES
