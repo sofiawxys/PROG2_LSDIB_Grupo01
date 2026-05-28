@@ -22,7 +22,7 @@ public class Main {
      * @throws FileNotFoundException
      */
     public static void main(String[] args) throws FileNotFoundException {
-        Hospital hospital = new Hospital("Hospital S.João");
+        Hospital hospital = GestorFicheiros.lerDados("hospital_dados.dat", "Hospital de S.João");
         Scanner scanner = new Scanner(System.in);
         int opcao = 0;
         while (opcao != 6) {
@@ -53,7 +53,10 @@ public class Main {
                     mostrarListagens(hospital, scanner);
                     break;
                 case 6:
+                    System.out.println("A guardar a sessão atual...");
+                    GestorFicheiros.guardarDados(hospital,"hospital_dados.dat");
                     System.out.println("A fechar o sistema...");
+                    break;
             }
         }
 
@@ -68,7 +71,7 @@ public class Main {
     private static void mostrarMenu() {
         System.out.println("\n===MENU===");
         System.out.println("1. Criar dados automaticamente");
-        System.out.println("2. Carregar dados do ficheiro");
+        System.out.println("2. Carregar dados de ficheiro .csv (sistema antigo)");
         System.out.println("3. Mostrar cálculo de indicadores de ocupação");
         System.out.println("4. Mostrar estado e indicadores de pressão");
         System.out.println("5. Apresentar listagens ordenadas");

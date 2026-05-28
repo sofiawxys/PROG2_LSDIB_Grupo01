@@ -1,4 +1,4 @@
-public class Data {
+public class Data implements java.io.Serializable {
 
     /**
      * O ano da data.
