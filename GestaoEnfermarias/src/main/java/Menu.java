@@ -9,10 +9,11 @@ import java.io.File;
 public class Menu {
     //CONSTANTES
     private static final int LIMITE_INF_OPCAO = 1;
-    private static final int LIMITE_SUP_OPCAO = 6;
+    private static final int LIMITE_SUP_OPCAO = 9;
     private static final int LIMITE_SUP_SUBOPCAO = 2;
 
     private Hospital hospital;
+    private Enfermaria enfermaria;
     private Scanner scanner;
 
     public Menu() {
@@ -23,7 +24,7 @@ public class Menu {
 
     public void iniciar(){
             int opcao = 0;
-            while (opcao != 6) {
+            while (opcao != 9) {
                 mostrarMenu();
                 opcao = lerOpcao(scanner, LIMITE_INF_OPCAO, LIMITE_SUP_OPCAO);
                 executarOpcao(opcao);
@@ -45,30 +46,30 @@ public class Menu {
 
             case 2:
                 try {
-                    carregarDadosFicheiro(hospital);
+                    carregarDadosFicheiro();
                 }catch (FileNotFoundException e) {
                     System.out.println("Erro ao ler ficheiro");
                 }
                 break;
 
             case 3:
-                inserirDadosConsola(hospital, scanner);
+                inserirDadosConsola();
                 break;
             case 4:
-                mostrarIndicadoresOcupacao(hospital, scanner);
+                mostrarIndicadoresOcupacao();
                 break;
 
             case 5:
-                mostrarEstadoPressao(hospital, scanner);
+                mostrarEstadoPressao();
                 break;
             case 6:
-                mostrarListagens(hospital, scanner);
+                mostrarListagens();
                 break;
             case 7:
-                mostrarTabelaOcupacao(hospital, scanner);
+                mostrarTabelaOcupacao();
                 break;
             case 8:
-                mostrarGraficoBarras(hospital, scanner);
+                mostrarGraficoBarras();
                 break;
             case 9:
                 System.out.println("A guardar a sessão atual...");
@@ -97,17 +98,17 @@ private void mostrarMenu() {
     System.out.print("Escolha uma opção: ");
 }
 
-private void inserirDadosConsola(Hospital hospital, Scanner scanner, Enfermaria enfermaria) { // REVER ENFERMARIA POR PARÂMETRO???
+private void inserirDadosConsola() { // REVER ENFERMARIA POR PARÂMETRO???
     System.out.println("Inserir enfermaria");
     System.out.println("Inserir episódio");
     int opcao = lerOpcao(scanner, 1, 2);
     if (opcao == 1) {
-        inserirEnfermaria(hospital, scanner);
+        inserirEnfermaria();
     }else{
-        inserirEpisodio(enfermaria, scanner);
+        inserirEpisodio();
     }
 }
-private void inserirEnfermaria(Hospital hospital, Scanner scanner) {
+private void inserirEnfermaria() {
     System.out.println("1. Enfermaria Geral");
     System.out.println("2. Enfermaria Psiquiátrica");
     System.out.println("3. Enfermaria Cuidados Intensivos");
@@ -131,7 +132,7 @@ private void inserirEnfermaria(Hospital hospital, Scanner scanner) {
             for (String recurso : recursos) {
                 eg.adicionarRecurso(recurso.trim());
             }
-            hospital.adicionarEnfermaria(eg)
+            hospital.adicionarEnfermaria(eg);
         } else {
             if (tipo == 2) {
                 System.out.println("Horário de visitas: ");
@@ -164,10 +165,21 @@ private void inserirEnfermaria(Hospital hospital, Scanner scanner) {
         System.out.println("Erro: " + e.getMessage());
     }
 }
-private void inserirEpisodio(Enfermaria enfermaria, Scanner scanner) {
+private void inserirEpisodio() {
+    System.out.println("ID da enfermaria: ");
+    String idEnfermaria = scanner.nextLine();
+    Enfermaria enfermaria = hospital.procurarEnfermaria(idEnfermaria);
+
+    if (enfermaria == null) {
+        System.out.println("Erro: Enfermaria não encontrada!");
+        return;
+    }
+
     try{
         System.out.print("ID da cama: ");
-        String idCama = scanner.nextLine();
+        String idCamaStr = scanner.nextLine();
+        int idCama = Integer.parseInt(idCamaStr);
+
         System.out.println("Data de admissão (AAAA-MM-DD): ");
         DataAvancada dataAdmissao = DataAvancada.parseData(scanner.nextLine());
         System.out.println("Data de alta (AAAA-MM-DD) ou Enter para deixar vazio ");
@@ -182,6 +194,8 @@ private void inserirEpisodio(Enfermaria enfermaria, Scanner scanner) {
         System.out.println("Erro: o ID da cama tem de ser um número inteiro.");
     }catch (CapacidadeExcedidaException e) {
         System.out.println("Erro: " + e.getMessage());
+    }catch (DataInvalidaException e) {
+        System.out.println("Erro de validação de datas: " + e.getMessage());
     }
 }
 
@@ -191,7 +205,7 @@ private void inserirEpisodio(Enfermaria enfermaria, Scanner scanner) {
  * @param hospital -> hospital desejado
  * @param scanner
  */
-private void mostrarIndicadoresOcupacao(Hospital hospital, Scanner scanner) {
+private void mostrarIndicadoresOcupacao() {
     System.out.print("Introduza o ID da enfermaria: ");
     String idEnfermaria = scanner.nextLine();
 
@@ -236,7 +250,7 @@ private void mostrarIndicadoresOcupacao(Hospital hospital, Scanner scanner) {
  * @param hospital -> hospital desejado
  * @throws FileNotFoundException
  */
-private void carregarDadosFicheiro(Hospital hospital) throws FileNotFoundException {
+private void carregarDadosFicheiro() throws FileNotFoundException {
     // Criar objetos File apenas para verificar se existem
     File ficheiroEnfermarias = new File("enfermarias.csv");
     File ficheiroEpisodios = new File("episodios.csv");
@@ -270,7 +284,7 @@ private void carregarDadosFicheiro(Hospital hospital) throws FileNotFoundExcepti
  * @param hospital -> hospital desejado
  * @param scanner
  */
-private void mostrarEstadoPressao(Hospital hospital, Scanner scanner) {
+private void mostrarEstadoPressao() {
     System.out.print("Introduza o ID da enfermaria: ");
     String idEnfermaria = scanner.nextLine();
 
@@ -322,7 +336,7 @@ private void mostrarEstadoPressao(Hospital hospital, Scanner scanner) {
  * @param hospital -> hospital desejado
  * @param scanner
  */
-private void mostrarListagens(Hospital hospital, Scanner scanner) {
+private void mostrarListagens() {
     System.out.println("\n1. Listar Enfermarias por taxa de ocupação");
     System.out.println("\n2. Listar Episódios de uma Enfermaria por data de admissão");
     System.out.println("Escolha a opção: ");
@@ -370,7 +384,7 @@ private void mostrarListagens(Hospital hospital, Scanner scanner) {
             break;
     }
 }
-    private void mostrarTabelaOcupacao(Hospital hospital, Scanner scanner) {
+    private void mostrarTabelaOcupacao() {
         System.out.print("ID da enfermaria: ");
         String idEnfermaria = scanner.nextLine();
         Enfermaria enfermaria = hospital.procurarEnfermaria(idEnfermaria);
@@ -389,7 +403,10 @@ private void mostrarListagens(Hospital hospital, Scanner scanner) {
         System.out.println();
         System.out.printf("%-12s | %-12s | %8s | %11s | %6s | %9s | %s%n",
                 "Enfermaria", "Data", "Ocupadas", "CamasTotais", "%Ocup", "Turnover%", "Barra");
-        System.out.println("-".repeat(95)); // posso usar .repeat???
+        for (int i = 0; i < 95; i++){
+            System.out.print("-");
+        }
+
 
         int totalDias = dataInicio.calcularDiferenca(dataFim) + 1;
         DataAvancada dataAtual = new DataAvancada(dataInicio);
@@ -411,11 +428,11 @@ private void mostrarListagens(Hospital hospital, Scanner scanner) {
             dataAtual.avancarUmDia();
         }
     }
-    private void mostrarGraficoBarras(Hospital hospital, Scanner scanner) {
+    private void mostrarGraficoBarras() {
         System.out.print("Data de referência (AAAA-MM-DD): ");
         Data dataRef = DataAvancada.parseData(scanner.nextLine()); //aqui guardamos a data numa variável do tipo Data e não DataAvancada, pois o método usado para a lista pede Data
 
-        char simbolo = "#";
+        char simbolo = '#';
 
         System.out.println("Orientação:");
         System.out.println("1. Horizontal");
@@ -505,4 +522,4 @@ public int lerOpcao(Scanner scanner, int limiteInf, int limiteSup) {
 
 
 
-        }
+
