@@ -385,8 +385,88 @@ private void mostrarTabelaOcupacao(Hospital hospital, Scanner scanner) {
     System.out.print("Data de fim (AAAA-MM-DD): ");
     DataAvancada dataFim = DataAvancada.parseData(scanner.nextLine());
 
+    // Cabeçalho
+    System.out.println();
+    System.out.printf("%-12s | %-12s | %8s | %11s | %6s | %9s | %s%n",
+            "Enfermaria", "Data", "Ocupadas", "CamasTotais", "%Ocup", "Turnover%", "Barra");
+    System.out.println("-".repeat(95)); // posso usar .repeat???
 
+    int totalDias = dataInicio.calcularDiferenca(dataFim) + 1;
+    DataAvancada dataAtual = new DataAvancada(dataInicio);
+
+    for (int i = 0; i < totalDias; i++) {
+        int ocupadas   = enfermaria.calcularOcupacao(dataAtual);
+        int totalCamas = enfermaria.getNumCamas();
+        double percOcup = enfermaria.calcularTaxaOcupacao(dataAtual);
+        int admissoes  = enfermaria.calcularAdmissoes(dataAtual);
+        int altas      = enfermaria.calcularAltas(dataAtual);
+        double turnover = (double)(admissoes + altas) / totalCamas * 100;
+        String barra   = gerarBarraHorizontal(percOcup, '#');
+
+        System.out.printf("%-12s | %-12s | %8d | %11d | %5.1f%% | %8.1f%% | %s%n",
+                enfermaria.getIdEnfermaria(),
+                dataAtual.toAnoMesDiaString(),
+                ocupadas, totalCamas, percOcup, turnover, barra);
+
+        dataAtual.avancarUmDia();
+    }
 }
+    private void mostrarGraficoBarras(Hospital hospital, Scanner scanner) {
+        System.out.print("Data de referência (AAAA-MM-DD): ");
+        Data dataRef = DataAvancada.parseData(scanner.nextLine()); //aqui guardamos a data numa variável do tipo Data e não DataAvancada, pois o método usado para a lista pede Data
+
+        char simbolo = "#";
+
+        System.out.println("Orientação:");
+        System.out.println("1. Horizontal");
+        System.out.println("2. Vertical");
+        int orientacao = lerOpcao(scanner, 1, 2);
+
+        List<Enfermaria> enfermarias = hospital.listarEnfermariasOrdenadasPorOcupacao(dataRef);
+        if (enfermarias.isEmpty()) {
+            System.out.println("Não foram encontradas enfermarias registadas");
+            return;
+        }
+
+        if (orientacao == 1) {
+            graficoHorizontal(enfermarias, dataRef, simbolo);
+        } else {
+            graficoVertical(enfermarias, dataRef, simbolo);
+        }
+    }
+    private void graficoHorizontal(List<Enfermaria> enfermarias, Data dataRef, char simbolo) {
+        System.out.println("GRÁFICO HORIZONTAL DE OCUPAÇÃO ");
+
+        for (Enfermaria enfermaria : enfermarias) {
+            double taxaOcupacao = enfermaria.calcularTaxaOcupacao(dataRef);
+            int tamanhoBarra = (int) Math.round(taxaOcupacao / 2.0);
+            if (tamanhoBarra < 0) {
+                tamanhoBarra = 0;
+            }
+            StringBuilder barra = new StringBuilder();
+            for (int i = 0; i < tamanhoBarra; i++) {
+                barra.append(simbolo);
+            }
+            System.out.printf("%-6s [%3.0f%%] [%s]\n",
+                    enfermaria.getIdEnfermaria(),
+                    taxaOcupacao,
+                    barra.toString());
+        }
+    }
+    private void graficoVertical(List<Enfermaria> enfermarias, Data dataRef, char simbolo){
+        int numEnfermarias = enfermarias.size();
+        int[] alturas = new int[numEnfermarias];
+
+        for (int i = 0; i < numEnfermarias; i++) {
+            double taxaOcupacao = enfermarias.get(i).calcularTaxaOcupacao(dataRef);
+            alturas[i] = (int) Math.round(taxaOcupacao / 2.0); // 100% -> 50 de altura
+            if (alturas[i] < 0) alturas[i] = 0;
+        }
+
+        System.out.println("GRÁFICO VERTICAL DE OCUPAÇÃO ");
+
+
+    }
 
 
 //MÉTODOS AUXILIARES
@@ -407,6 +487,18 @@ public int lerOpcao(Scanner scanner, int limiteInf, int limiteSup) {
     }
     return opcao;
 }
+
+    private static String gerarBarraHorizontal(double taxa, char simbolo) {
+        // 50 caracteres = 100%, por isso: taxa * 50 / 100
+        int preenchidos = (int) (taxa * 50 / 100);
+        // Garantir que não ultrapassa 50
+        if (preenchidos > 50) preenchidos = 50;
+        int vazios = 50 - preenchidos;
+
+        String barra = String.valueOf(simbolo).repeat(preenchidos)
+                + " ".repeat(vazios);
+        return "[" + barra + "]";
+    }
 
 }
 
