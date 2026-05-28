@@ -370,47 +370,47 @@ private void mostrarListagens(Hospital hospital, Scanner scanner) {
             break;
     }
 }
-private void mostrarTabelaOcupacao(Hospital hospital, Scanner scanner) {
-    System.out.print("ID da enfermaria: ");
-    String idEnfermaria = scanner.nextLine();
-    Enfermaria enfermaria = hospital.procurarEnfermaria(idEnfermaria);
+    private void mostrarTabelaOcupacao(Hospital hospital, Scanner scanner) {
+        System.out.print("ID da enfermaria: ");
+        String idEnfermaria = scanner.nextLine();
+        Enfermaria enfermaria = hospital.procurarEnfermaria(idEnfermaria);
 
-    if (enfermaria == null) {
-        System.out.println("Enfermaria não encontrada.");
-        return;
+        if (enfermaria == null) {
+            System.out.println("Enfermaria não encontrada.");
+            return;
+        }
+
+        System.out.print("Data de início (AAAA-MM-DD): ");
+        DataAvancada dataInicio = DataAvancada.parseData(scanner.nextLine());
+        System.out.print("Data de fim (AAAA-MM-DD): ");
+        DataAvancada dataFim = DataAvancada.parseData(scanner.nextLine());
+
+        // Cabeçalho
+        System.out.println();
+        System.out.printf("%-12s | %-12s | %8s | %11s | %6s | %9s | %s%n",
+                "Enfermaria", "Data", "Ocupadas", "CamasTotais", "%Ocup", "Turnover%", "Barra");
+        System.out.println("-".repeat(95)); // posso usar .repeat???
+
+        int totalDias = dataInicio.calcularDiferenca(dataFim) + 1;
+        DataAvancada dataAtual = new DataAvancada(dataInicio);
+
+        for (int i = 0; i < totalDias; i++) {
+            int ocupadas   = enfermaria.calcularOcupacao(dataAtual);
+            int totalCamas = enfermaria.getNumCamas();
+            double percOcup = enfermaria.calcularTaxaOcupacao(dataAtual);
+            int admissoes  = enfermaria.calcularAdmissoes(dataAtual);
+            int altas      = enfermaria.calcularAltas(dataAtual);
+            double turnover = (double)(admissoes + altas) / totalCamas * 100;
+            String barra   = gerarBarraHorizontal(percOcup, '#');
+
+            System.out.printf("%-12s | %-12s | %8d | %11d | %5.1f%% | %8.1f%% | %s%n",
+                    enfermaria.getIdEnfermaria(),
+                    dataAtual.toAnoMesDiaString(),
+                    ocupadas, totalCamas, percOcup, turnover, barra);
+
+            dataAtual.avancarUmDia();
+        }
     }
-
-    System.out.print("Data de início (AAAA-MM-DD): ");
-    DataAvancada dataInicio = DataAvancada.parseData(scanner.nextLine());
-    System.out.print("Data de fim (AAAA-MM-DD): ");
-    DataAvancada dataFim = DataAvancada.parseData(scanner.nextLine());
-
-    // Cabeçalho
-    System.out.println();
-    System.out.printf("%-12s | %-12s | %8s | %11s | %6s | %9s | %s%n",
-            "Enfermaria", "Data", "Ocupadas", "CamasTotais", "%Ocup", "Turnover%", "Barra");
-    System.out.println("-".repeat(95)); // posso usar .repeat???
-
-    int totalDias = dataInicio.calcularDiferenca(dataFim) + 1;
-    DataAvancada dataAtual = new DataAvancada(dataInicio);
-
-    for (int i = 0; i < totalDias; i++) {
-        int ocupadas   = enfermaria.calcularOcupacao(dataAtual);
-        int totalCamas = enfermaria.getNumCamas();
-        double percOcup = enfermaria.calcularTaxaOcupacao(dataAtual);
-        int admissoes  = enfermaria.calcularAdmissoes(dataAtual);
-        int altas      = enfermaria.calcularAltas(dataAtual);
-        double turnover = (double)(admissoes + altas) / totalCamas * 100;
-        String barra   = gerarBarraHorizontal(percOcup, '#');
-
-        System.out.printf("%-12s | %-12s | %8d | %11d | %5.1f%% | %8.1f%% | %s%n",
-                enfermaria.getIdEnfermaria(),
-                dataAtual.toAnoMesDiaString(),
-                ocupadas, totalCamas, percOcup, turnover, barra);
-
-        dataAtual.avancarUmDia();
-    }
-}
     private void mostrarGraficoBarras(Hospital hospital, Scanner scanner) {
         System.out.print("Data de referência (AAAA-MM-DD): ");
         Data dataRef = DataAvancada.parseData(scanner.nextLine()); //aqui guardamos a data numa variável do tipo Data e não DataAvancada, pois o método usado para a lista pede Data
