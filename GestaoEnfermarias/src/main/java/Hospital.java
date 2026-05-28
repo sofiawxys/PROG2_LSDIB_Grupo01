@@ -76,32 +76,36 @@ public class Hospital implements java.io.Serializable{
     }
 
     /**
-     * Le um ficheiro CSV e carrega os episodios clinicos, associando-os as enfermarias correspondentes
+     * Lê um ficheiro CSV e carrega os episódios clínicos, associando-os às enfermarias correspondentes.
+     * Utiliza o mecanismo de try-with-resources para garantir que o ficheiro é fechado automaticamente
+     * após a leitura, prevenindo fugas de memória e ficheiros trancados mesmo em caso de erro.
      *
-     * @param nomeFicheiroCSV ->nome do ficheiro CSV com os episodios
-     * @throws FileNotFoundException
+     * @param nomeFicheiroCSV o nome ou caminho do ficheiro CSV contendo os dados dos episódios
      */
-    public void carregarEpisodios(String nomeFicheiroCSV) throws FileNotFoundException {
+    public void carregarEpisodios(String nomeFicheiroCSV) {
         File ficheiro = new File(nomeFicheiroCSV);
 
-        Scanner lerFicheiro = new Scanner(ficheiro);
-
-        if (lerFicheiro.hasNextLine()) {
-            lerFicheiro.nextLine(); // ignora o cabeçalho
+        try (Scanner lerFicheiro = new Scanner(ficheiro)) {
+            if (lerFicheiro.hasNextLine()) {
+                lerFicheiro.nextLine();
+            }
+            while (lerFicheiro.hasNextLine()) {
+                processarLinhaEpisodio(lerFicheiro.nextLine());
+            }
+        } catch (FileNotFoundException e) {
+            // Apenas regista o erro
+            registoErros.add("Ficheiro não encontrado: " + nomeFicheiroCSV);
         }
-
-        while (lerFicheiro.hasNextLine()) {
-            String linha = lerFicheiro.nextLine();
-            processarLinhaEpisodio(linha);
-        }
-
-        lerFicheiro.close();
     }
 
     /**
-     * Analisa e valida uma unica linha de texto do ficheiro de episodios, garantindo que as datas e as enfermarias associadas sao validas
+     * Analisa e valida uma única linha de texto do ficheiro de episódios clínicos.
+     * Extrai as informações da cama e das datas, validando a integridade dos dados e
+     * associando o episódio à enfermaria correspondente.
+     * Centraliza o tratamento de erros usando múltiplos blocos catch para lidar com
+     * falhas de formatação numérica e exceções próprias das regras de negócio do hospital.
      *
-     * @param linha -> linha de texto no ficheiro CSV
+     * @param linha a linha de texto do ficheiro CSV a ser processada
      */
     private void processarLinhaEpisodio(String linha) {
         String[] partes = linha.split(";");
@@ -111,43 +115,53 @@ public class Hospital implements java.io.Serializable{
         }
 
         String idEnfermaria = partes[0].trim();
-        String idCamaStr = partes[1];
-        String dataAdmStr = partes[2];
-
         Enfermaria enfermaria = procurarEnfermaria(idEnfermaria);
+
         if (enfermaria == null) {
             registoErros.add("Enfermaria não encontrada: " + linha);
             return;
         }
 
-        if (!isNumero(idCamaStr)) {
-            registoErros.add("ID de cama não é um numero: " + linha);
-            return;
-        }
-        int idCama = Integer.parseInt(idCamaStr);
+        try {
+            // 1. Tenta converter o ID (lança NumberFormatException se falhar)
+            int idCama = Integer.parseInt(partes[1].trim());
 
-        Data dataAdmissao = extrairData(dataAdmStr);
-        if (dataAdmissao == null) {
-            registoErros.add("Data de admissão com formato incorreto: " + linha);
-            return;
-        }
+            // 2. Extrai as datas
+            Data dataAdmissao = extrairData(partes[2].trim());
+            if (dataAdmissao == null) {
+                registoErros.add("Data de admissão com formato incorreto: " + linha);
+                return;
+            }
 
-        Data dataAlta = null;
-        if (partes.length >= 4) {
-            String dataAltaStr = partes[3].trim();
-            if (!dataAltaStr.isEmpty()) {
-                dataAlta = extrairData(dataAltaStr);
+            Data dataAlta = null;
+            if (partes.length >= 4 && !partes[3].trim().isEmpty()) {
+                dataAlta = extrairData(partes[3].trim());
                 if (dataAlta == null) {
                     registoErros.add("Data de alta com formato incorreto: " + linha);
                     return;
                 }
             }
+
+            // 3. Tenta criar e adicionar o episódio
+            Episodio ep = new Episodio(idCama, dataAdmissao, dataAlta);
+            enfermaria.adicionarEpisodio(ep);
+
+            //os diferentes erros um a um:
+        } catch (NumberFormatException e) {
+            registoErros.add("ID da cama não é um número válido: " + linha);
+
+        } catch (DataInvalidaException e) {
+            // Apanha especificamente os erros de datas incoerentes (ex: alta anterior à admissão)
+            registoErros.add("Inconsistência nos dados de internamento: " + e.getMessage() + " [Linha: " + linha + "]");
+
+        } catch (CapacidadeExcedidaException e) {
+            // Apanha especificamente os erros de lotação (ex: enfermaria já atingiu o limite)
+            registoErros.add("Inconsistência nos dados de internamento: " + e.getMessage() + " [Linha: " + linha + "]");
+
+        } catch (Exception e) {
+            // Apanha qualquer outro erro inesperado (rede de segurança final)
+            registoErros.add("Erro crítico desconhecido: " + e.getMessage());
         }
-        try{
-        Episodio ep = new Episodio(idCama, dataAdmissao, dataAlta);
-        enfermaria.adicionarEpisodio(ep);
-    } catch (Exception e) {
-        registoErros.add("Erro ao carregar episodio: " + linha + " -> " + e.getMessage());}
     }
 
     /**
@@ -249,27 +263,32 @@ public class Hospital implements java.io.Serializable{
     }
 
     /**
-     * Converte yma string de data no formato AAAA-MM-DD para um objeto da classe Data
+     * Converte uma string de data no formato AAAA-MM-DD para um objeto da classe Data.
+     * Utiliza um bloco try-catch nativo para validar se os componentes da data
+     * (ano, mês e dia) são números inteiros válidos.
      *
-     * @param dataStr -> data (AAAA-MM-DD) em String
-     * @return data como objeto da classe Data
+     * @param dataStr a data em formato de String a ser avaliada (ex: "2026-04-15")
+     * @return um objeto da classe Data devidamente instanciado, ou null se a string
+     * contiver letras ou tiver um formato inválido
      */
     private Data extrairData(String dataStr) {
-        String[] partesData = dataStr.split("-"); // assumindo que as datas estão separadas por "-"
+        String[] partesData = dataStr.split("-");
 
         if (partesData.length != 3) {
             return null;
         }
 
-        if (!isNumero(partesData[0]) || !isNumero(partesData[1]) || !isNumero(partesData[2])) {
-            return null;
+        try {
+            // Tenta converter. Se houver letras, salta para o catch
+            int ano = Integer.parseInt(partesData[0].trim());
+            int mes = Integer.parseInt(partesData[1].trim());
+            int dia = Integer.parseInt(partesData[2].trim());
+
+            return new Data(ano, mes, dia);
+
+        } catch (NumberFormatException e) {
+            return null; // A data tinha texto em vez de números, logo é inválida
         }
-
-        int ano = Integer.parseInt(partesData[0]);
-        int mes = Integer.parseInt(partesData[1]);
-        int dia = Integer.parseInt(partesData[2]);
-
-        return new Data(ano, mes, dia);
     }
 
     /**
