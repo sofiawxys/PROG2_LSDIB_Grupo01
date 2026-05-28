@@ -5,7 +5,7 @@ import java.util.ArrayList;
  * Classe abstrata que serve de base para as enfermarias de diversos tipos
  * Centraliza a gestao da capacidade camas, o historico de episodios e o calculo de metricas de ocupacao e LoS
  */
-public abstract class Enfermaria implements GestaoOcupacao {
+public abstract class Enfermaria implements GestaoOcupacao, java.io.Serializable {
 
     //CONSTANTE
     private static final int LIMITE_PRESSAO = 85; //mudar para double

@@ -2,7 +2,7 @@
  * Representa um episodio de internamento de um doente numa cama especifica
  * Responsavel por registar as datas de admissao e alta, verificar o estado ativo de internamento e calcular o LoS (Length of Stay) em dias
  */
-public class Episodio {
+public class Episodio implements java.io.Serializable {
 
     //VARIAVEIS
     private int idCama;
