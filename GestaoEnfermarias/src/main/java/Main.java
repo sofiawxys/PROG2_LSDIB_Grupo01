@@ -41,16 +41,25 @@ public class Main {
                     carregarDadosFicheiro(hospital);
                     break;
                 case 3:
+                    inserirDadosConsola(hospital, scanner);
+                    break;
+                case 4:
                     mostrarIndicadoresOcupacao(hospital, scanner);
                     break;
 
-                case 4:
+                case 5:
                     mostrarEstadoPressao(hospital, scanner);
                     break;
-                case 5:
+                case 6:
                     mostrarListagens(hospital, scanner);
                     break;
-                case 6:
+                case 7:
+                    mostrarTabelaOcupacao(hospital, scanner);
+                    break;
+                case 8:
+                    mostrarGraficoBarras(hospital, scanner);
+                    break;
+                case 9:
                     System.out.println("A guardar a sessão atual...");
                     GestorFicheiros.guardarDados(hospital,"hospital_dados.dat");
                     System.out.println("A fechar o sistema...");
@@ -70,11 +79,102 @@ public class Main {
         System.out.println("\n===MENU===");
         System.out.println("1. Criar dados automaticamente");
         System.out.println("2. Carregar dados de ficheiro .csv (sistema antigo)");
-        System.out.println("3. Mostrar cálculo de indicadores de ocupação");
-        System.out.println("4. Mostrar estado e indicadores de pressão");
-        System.out.println("5. Apresentar listagens ordenadas");
-        System.out.println("6. Sair");
+        System.out.println("3. Inserir dados na consola");
+        System.out.println("4. Mostrar cálculo de indicadores de ocupação");
+        System.out.println("5. Mostrar estado e indicadores de pressão");
+        System.out.println("6. Apresentar listagens ordenadas");
+        System.out.println("7. Mostrar tabela de ocupação");
+        System.out.println("8. Mostrar grafico barras");
+        System.out.println("9. Sair");
         System.out.print("Escolha uma opção: ");
+    }
+
+    private static void inserirDadosConsola(Hospital hospital, Scanner scanner) {
+        System.out.println("Inserir enfermaria");
+        System.out.println("Inserir episódio");
+        int opcao = lerOpcao(scanner, 1, 2);
+        if (opcao == 1) {
+            inserirEnfermaria(hospital, scanner);
+        }else{
+            inserirEpisodio(hospital, scanner);
+        }
+    }
+    private static void inserirEnfermaria(Hospital hospital, Scanner scanner) {
+        System.out.println("1. Enfermaria Geral");
+        System.out.println("2. Enfermaria Psiquiátrica");
+        System.out.println("3. Enfermaria Cuidados Intensivos");
+        int tipo = lerOpcao(scanner, 1, 3);
+
+        try {
+            System.out.print("ID da enfermaria: ");
+            String id = scanner.nextLine();
+
+            System.out.print("Número de camas: ");
+            int numCamas = Integer.parseInt(scanner.nextLine());
+
+            if (tipo == 1) {
+                System.out.print("Número de acompanhantes: ");
+                int numAcomp = Integer.parseInt(scanner.nextLine());
+
+                System.out.print("Recursos: ");
+                String[] recursos = scanner.nextLine().split(",");
+
+                EnfermariaGeral eg = new EnfermariaGeral(id, numCamas, numAcomp);
+                for (String recurso : recursos) {
+                    eg.adicionarRecurso(recurso.trim());
+                }
+                hospital.adicionarEnfermaria(eg)
+            } else {
+                if (tipo == 2) {
+                    System.out.println("Horário de visitas: ");
+                    String horarioVisitas = scanner.nextLine();
+
+                    System.out.println("Nível de segurança: ");
+                    String nivelSeguranca = scanner.nextLine();
+
+                    hospital.adicionarEnfermaria(new EnfermariaPsiquiatrica(id, numCamas, horarioVisitas, nivelSeguranca));
+
+                } else {
+                    if (tipo == 3) {
+                        System.out.println("Horário visitas: ");
+                        String horarioVisitas = scanner.nextLine();
+
+                        System.out.println("Pressão atmosférica: ");
+                        double pressaoAtmosferica = Double.parseDouble(scanner.nextLine());
+
+                        System.out.println("Pressão de referência: ");
+                        double pressaoReferencia = Double.parseDouble(scanner.nextLine());
+
+                        hospital.adicionarEnfermaria(new EnfermariaCuidadosIntensivos(id, numCamas, horarioVisitas, pressaoAtmosferica, pressaoReferencia));
+                    }
+                }
+            }
+            System.out.println("Enfermaria criada com sucesso!");
+        } catch (NumberFormatException e) {
+            System.out.println("Erro: introduza um número válido.");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Erro: " + e.getMessage());
+        }
+    }
+    private static void inserirEpisodio(Enfermaria enfermaria, Scanner scanner) {
+        try{
+            System.out.print("ID da cama: ");
+            String idCama = scanner.nextLine();
+            System.out.println("Data de admissão (AAAA-MM-DD): ");
+            DataAvancada dataAdmissao = DataAvancada.parseData(scanner.nextLine());
+            System.out.println("Data de alta (AAAA-MM-DD) ou Enter para deixar vazio ");
+            String dataAltaStr = scanner.nextLine();
+            DataAvancada dataAlta = null;
+            if (!dataAltaStr.isEmpty()) {
+                dataAlta = DataAvancada.parseData(dataAltaStr);
+            }
+            enfermaria.adicionarEpisodio(new Episodio(idCama, dataAdmissao, dataAlta));
+            System.out.println("Episódio criado com sucesso!");
+        }catch (NumberFormatException e) {
+        System.out.println("Erro: o ID da cama tem de ser um número inteiro.");
+        }catch (IllegalArgumentException e) {
+        System.out.println("Erro: " + e.getMessage());
+        }
     }
 
     /**
@@ -262,6 +362,7 @@ public class Main {
                 break;
         }
     }
+
 
 
 //MÉTODOS AUXILIARES
