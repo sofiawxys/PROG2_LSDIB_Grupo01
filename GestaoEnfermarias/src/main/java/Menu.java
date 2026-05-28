@@ -9,7 +9,7 @@ import java.io.File;
 public class Menu {
     //CONSTANTES
     private static final int LIMITE_INF_OPCAO = 1;
-    private static final int LIMITE_SUP_OPCAO = 9;
+    private static final int LIMITE_SUP_OPCAO = 10;
     private static final int LIMITE_SUP_SUBOPCAO = 2;
 
     private Hospital hospital;
@@ -24,7 +24,7 @@ public class Menu {
 
     public void iniciar(){
             int opcao = 0;
-            while (opcao != 9) {
+            while (opcao != LIMITE_SUP_OPCAO) {
                 mostrarMenu();
                 opcao = lerOpcao(scanner, LIMITE_INF_OPCAO, LIMITE_SUP_OPCAO);
                 executarOpcao(opcao);
@@ -53,25 +53,37 @@ public class Menu {
                 break;
 
             case 3:
+                System.out.println("\nA restaurar dados da sessão anterior...");
+                Hospital hospitalCarregado = GestorFicheiros.lerDados("hospital_dados.dat");
+
+                if(hospitalCarregado != null){
+                    this.hospital = hospitalCarregado;
+                    System.out.println("Sessão restaurada com sucesso!");
+                }else{
+                    System.out.println("Nenhum hospital foi encontrado.");
+                }
+                break;
+
+            case 4:
                 inserirDadosConsola();
                 break;
-            case 4:
+            case 5:
                 mostrarIndicadoresOcupacao();
                 break;
 
-            case 5:
+            case 6:
                 mostrarEstadoPressao();
                 break;
-            case 6:
+            case 7:
                 mostrarListagens();
                 break;
-            case 7:
+            case 8:
                 mostrarTabelaOcupacao();
                 break;
-            case 8:
+            case 9:
                 mostrarGraficoBarras();
                 break;
-            case 9:
+            case 10:
                 System.out.println("A guardar a sessão atual...");
                 GestorFicheiros.guardarDados(hospital,"hospital_dados.dat");
                 System.out.println("A fechar o sistema...");
@@ -87,14 +99,15 @@ public class Menu {
 private void mostrarMenu() {
     System.out.println("\n===MENU===");
     System.out.println("1. Criar dados automaticamente");
-    System.out.println("2. Carregar dados de ficheiro .csv (sistema antigo)");
-    System.out.println("3. Inserir dados na consola");
-    System.out.println("4. Mostrar cálculo de indicadores de ocupação");
-    System.out.println("5. Mostrar estado e indicadores de pressão");
-    System.out.println("6. Apresentar listagens ordenadas");
-    System.out.println("7. Mostrar tabela de ocupação");
-    System.out.println("8. Mostrar grafico barras");
-    System.out.println("9. Sair");
+    System.out.println("2. Carregar dados de ficheiro .csv");
+    System.out.println("3. Carregar dados da sessão anterior");
+    System.out.println("4. Inserir dados na consola");
+    System.out.println("5. Mostrar cálculo de indicadores de ocupação");
+    System.out.println("6. Mostrar estado e indicadores de pressão");
+    System.out.println("7. Apresentar listagens ordenadas");
+    System.out.println("8. Mostrar tabela de ocupação");
+    System.out.println("9. Mostrar grafico barras");
+    System.out.println("10. Sair");
     System.out.print("Escolha uma opção: ");
 }
 
@@ -201,9 +214,6 @@ private void inserirEpisodio() {
 
 /**
  * Metodo que solicita uma enfermaria e uma data ao utlizador e apresenta as metricas de ocupacao e LoS
- *
- * @param hospital -> hospital desejado
- * @param scanner
  */
 private void mostrarIndicadoresOcupacao() {
     System.out.print("Introduza o ID da enfermaria: ");
@@ -247,7 +257,6 @@ private void mostrarIndicadoresOcupacao() {
 /**
  * Metodo que faz o carregamento de ficheiros CSV e imprime no ecra eventuais erros de validacao
  *
- * @param hospital -> hospital desejado
  * @throws FileNotFoundException
  */
 private void carregarDadosFicheiro() throws FileNotFoundException {
@@ -281,8 +290,6 @@ private void carregarDadosFicheiro() throws FileNotFoundException {
 /**
  * Metodo que analisa e imprime o estado diario de uma enfermaria num certo intervalo de tempo
  *
- * @param hospital -> hospital desejado
- * @param scanner
  */
 private void mostrarEstadoPressao() {
     System.out.print("Introduza o ID da enfermaria: ");
@@ -333,8 +340,6 @@ private void mostrarEstadoPressao() {
 /**
  * Metodo que permite listar enfermarias ordenadas por ocupacao ou listar os episodios de uma enfermaira ordenados por admissao
  *
- * @param hospital -> hospital desejado
- * @param scanner
  */
 private void mostrarListagens() {
     System.out.println("\n1. Listar Enfermarias por taxa de ocupação");

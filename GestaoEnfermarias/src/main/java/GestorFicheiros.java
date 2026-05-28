@@ -21,7 +21,7 @@ public class GestorFicheiros {
         }
     }
 
-    public static Hospital lerDados(String nomeFicheiro, String nomePorOmissao) {
+    public static Hospital lerDados(String nomeFicheiro) {
         Hospital hospital = null;
         try {
             FileInputStream fileIn = new FileInputStream(nomeFicheiro);
@@ -37,9 +37,6 @@ public class GestorFicheiros {
         } catch (ClassNotFoundException c) {
             System.out.println("Erro ao ler dados");
             c.printStackTrace();
-        }
-        if (hospital == null) {
-            return new Hospital(nomePorOmissao);
         }
         return hospital;
     }
