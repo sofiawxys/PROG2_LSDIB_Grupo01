@@ -43,12 +43,20 @@ public class DataAvancada extends Data{
         setData(ano, mes, dia);
     }
 
-    public static DataAvancada parseData(String dataStr) {
-        String[] data = dataStr.split("-");
-        int ano = Integer.parseInt(data[0]);
-        int mes = Integer.parseInt(data[1]);
-        int dia = Integer.parseInt(data[2]);
-        return new DataAvancada(ano, mes, dia);
+    public static DataAvancada parseData(String dataStr) throws DataInvalidaException {
+       try {
+           String[] data = dataStr.split("-");
+           if (data.length != 3) {
+               throw new Exception(); //força a ida para o catch
+           }
+           int ano = Integer.parseInt(data[0]);
+           int mes = Integer.parseInt(data[1]);
+           int dia = Integer.parseInt(data[2]);
+           return new DataAvancada(ano, mes, dia);
+
+       }catch (Exception e){
+           throw new DataInvalidaException("Formato inválido, as datas devem ser AAAA-MM-DD");
+       }
     }
 
     @Override

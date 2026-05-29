@@ -134,7 +134,7 @@ public class Hospital implements java.io.Serializable{
             }
 
             Data dataAlta = null;
-            if (partes.length >= 4 && !partes[3].trim().isEmpty()) {
+            if (partes.length >= 4 && !partes[3].trim().isEmpty() && !partes[3].trim().equals("-")) {
                 dataAlta = extrairData(partes[3].trim());
                 if (dataAlta == null) {
                     registoErros.add("Data de alta com formato incorreto: " + linha);
