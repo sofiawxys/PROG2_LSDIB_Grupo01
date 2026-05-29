@@ -459,16 +459,56 @@ public class Menu {
     private void graficoVertical(List<Enfermaria> enfermarias, Data dataRef, char simbolo) {
         int numEnfermarias = enfermarias.size();
         int[] alturas = new int[numEnfermarias];
+        int alturaMax =0;
 
         for (int i = 0; i < numEnfermarias; i++) {
             double taxaOcupacao = enfermarias.get(i).calcularTaxaOcupacao(dataRef);
             alturas[i] = (int) Math.round(taxaOcupacao / 2.0); // 100% -> 50 de altura
-            if (alturas[i] < 0) alturas[i] = 0;
+            if (alturas[i] < 0) {
+                alturas[i] = 0;
+            }
+            if (alturas[i] > 50) {
+                alturas[i] = 50;
+            }
+            if (alturas[i] > alturaMax) {
+                alturaMax = alturas[i];
+            }
         }
+        System.out.println("GRÁFICO VERTICAL DE OCUPAÇÃO(" + dataRef.toAnoMesDiaString() + ")\n");
 
-        System.out.println("GRÁFICO VERTICAL DE OCUPAÇÃO ");
+        if(alturaMax ==0){
+            System.out.println("As enfermarias selecionadas estão vazias nesta data.");
+        }
+        for(int nivel = alturaMax; nivel > 0; nivel--){
+            //eixo do y
+            System.out.printf("%4d%% |", nivel*2);
 
+            for(int i = 0; i < numEnfermarias; i++){
+                if(alturas[i] >= nivel){
+                    System.out.print("  "+ simbolo +"  ");
+                } else{
+                    System.out.print("     ");
+                }
+            }
+            System.out.println();
+        }
+        //eixo do x
+        System.out.print("-------");
+        for(int i = 0; i < numEnfermarias; i++){
+            System.out.print("-----");
+        }
+        System.out.println();
 
+        //legenda
+        System.out.print("       ");
+        for( Enfermaria enfermaria : enfermarias){
+            String id = enfermaria.getIdEnfermaria();
+            if(id.length()>4){
+                id = id.substring(0,4); // corta o id se for muito grande
+            }
+            System.out.printf("%-4s ", id);
+        }
+        System.out.println("\n");
     }
 
 
@@ -495,12 +535,19 @@ public class Menu {
         // 50 caracteres = 100%, por isso: taxa * 50 / 100
         int preenchidos = (int) (taxa * 50 / 100);
         // Garantir que não ultrapassa 50
-        if (preenchidos > 50) preenchidos = 50;
-        int vazios = 50 - preenchidos;
+        if (preenchidos > 50){
+            preenchidos = 50;
+        }
 
-        String barra = String.valueOf(simbolo).repeat(preenchidos)
-                + " ".repeat(vazios);
-        return "[" + barra + "]";
+        int vazios = 50 - preenchidos;
+       StringBuilder barra = new StringBuilder();
+        for (int i = 0; i < preenchidos; i++) {
+            barra.append(simbolo);
+        }
+        for(int i=0; i< vazios; i++){
+            barra.append(" ");
+        }
+        return "["+barra.toString()+"]";
     }
 }
 
