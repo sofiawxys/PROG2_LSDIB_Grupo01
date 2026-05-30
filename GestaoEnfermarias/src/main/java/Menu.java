@@ -37,6 +37,8 @@ public class Menu {
                     System.out.println("Erro de datas: " + e.getMessage());
                 } catch (CapacidadeExcedidaException e) {
                     System.out.println("Capacidade excedida: " + e.getMessage());
+                }catch (CamaOcupadaException e){
+                    System.out.println("Erro de sobreposição de camas: " + e.getMessage());
                 }
                 break;
 
@@ -138,32 +140,58 @@ public class Menu {
         int tipo = lerOpcao(1, 3);
 
         try {
-            String id = leitor.lerString("ID da enfermaria: ");
-            int numCamas = leitor.lerInteiro("Número de camas: ");
-
-            if (tipo == 1) {
-                int numAcomp = leitor.lerInteiro("Número de acompanhantes: ");
-                String[] recursos = leitor.lerString("Recursos: ").split(",");
-
-                EnfermariaGeral eg = new EnfermariaGeral(id, numCamas, numAcomp);
-                for (String recurso : recursos) {
-                    eg.adicionarRecurso(recurso.trim());
+            //Mostrar enfermarias já existentes
+            List<Enfermaria> existentes = hospital.getEnfermarias();
+            if (!existentes.isEmpty()) {
+                System.out.println("IDS já em uso no hospital: ");
+                for (Enfermaria e : existentes) {
+                    System.out.print("[" + e.getIdEnfermaria() + "] ");
                 }
-                hospital.adicionarEnfermaria(eg);
-            } else {
-                if (tipo == 2) {
-                    String horarioVisitas = leitor.lerString("Horário de visitas: ");
-                    String nivelSeguranca = leitor.lerString("Nível de segurança: ");
-
-                    hospital.adicionarEnfermaria(new EnfermariaPsiquiatrica(id, numCamas, horarioVisitas, nivelSeguranca));
+                System.out.println();
+            }
+            // Não deixar o ID repetir
+            String id = "";
+            boolean idValido = false;
+            while (!idValido) {
+                id = leitor.lerString("ID da nova enfermaria: ");
+                if (hospital.procurarEnfermaria(id) != null) {
+                    System.out.println("Erro: Já existe uma enfermaria com esse ID. Escolha um ID único.");
 
                 } else {
-                    if (tipo == 3) {
-                        String horarioVisitas = leitor.lerString("Horário visitas: ");
-                        double pressaoAtmosferica = leitor.lerDouble("Pressão atmosférica: ");
-                        double pressaoReferencia = leitor.lerDouble("Pressão de referência: ");
-                        hospital.adicionarEnfermaria(new EnfermariaCuidadosIntensivos(id, numCamas, horarioVisitas, pressaoAtmosferica, pressaoReferencia));
+                    idValido = true;
+                }
+            }
+            int numCamas = 0;
+            while (numCamas <= 0) {
+                numCamas = leitor.lerInteiro("Número de camas: ");
+                if (numCamas <= 0) {
+                    System.out.println("Erro: O número de camas tem de ser maior que zero.");
+                }
+            }
+            switch (tipo) {
+                case 1: {
+                    int numAcomp = leitor.lerInteiro("Número de acompanhantes: ");
+                    String[] recursos = leitor.lerString("Recursos: ").split(",");
+
+                    EnfermariaGeral eg = new EnfermariaGeral(id, numCamas, numAcomp);
+                    for (String recurso : recursos) {
+                        eg.adicionarRecurso(recurso.trim());
                     }
+                    hospital.adicionarEnfermaria(eg);
+                    break;
+                }
+                case 2: {
+                    String horarioVisitas = leitor.lerString("Horário de visitas: ");
+                    String nivelSeguranca = leitor.lerString("Nível de segurança: ");
+                    hospital.adicionarEnfermaria(new EnfermariaPsiquiatrica(id, numCamas, horarioVisitas, nivelSeguranca));
+                    break;
+                }
+                case 3: {
+                    String horarioVisitas = leitor.lerString("Horário visitas: ");
+                    double pressaoAtmosferica = leitor.lerDouble("Pressão atmosférica: ");
+                    double pressaoReferencia = leitor.lerDouble("Pressão de referência: ");
+                    hospital.adicionarEnfermaria(new EnfermariaCuidadosIntensivos(id, numCamas, horarioVisitas, pressaoAtmosferica, pressaoReferencia));
+                    break;
                 }
             }
             System.out.println("Enfermaria criada com sucesso!");
@@ -173,6 +201,15 @@ public class Menu {
     }
 
     private void inserirEpisodio() {
+        List<Enfermaria> existentes = hospital.getEnfermarias();
+        if(existentes.isEmpty()) {
+            System.out.println("Erro: Não existem enfermarias registadas. Crie uma enfermaria primeiro!");
+            return;
+        }
+        System.out.println("Enfermarias Disponiveis:");
+        for(Enfermaria e : existentes) {
+            System.out.printf("ID: %-6s | Camas totais: %d\n", e.getIdEnfermaria(),e.getNumCamas());
+        }
         String idEnfermaria = leitor.lerString("\nID da enfermaria: ");
         Enfermaria enfermaria = hospital.procurarEnfermaria(idEnfermaria);
 
@@ -182,8 +219,7 @@ public class Menu {
         }
 
         try {
-            String idCamaStr = leitor.lerString("ID da cama: ");
-            int idCama = Integer.parseInt(idCamaStr);
+            int idCama = leitor.lerInteiro("ID da cama: ");
             DataAvancada dataAdmissao = DataAvancada.parseData(leitor.lerString("Data de admissão (AAAA-MM-DD): "));
             String dataAltaStr = leitor.lerString("Data de alta (AAAA-MM-DD) ou - se não tiver alta");
             DataAvancada dataAlta = null;
@@ -193,7 +229,9 @@ public class Menu {
             enfermaria.adicionarEpisodio(new Episodio(idCama, dataAdmissao, dataAlta));
             System.out.println("Episódio criado com sucesso!");
         } catch (CapacidadeExcedidaException e) {
-            System.out.println("Erro: " + e.getMessage());
+            System.out.println("Erro (capacidade excedida): " + e.getMessage());
+        }catch(CamaOcupadaException e){
+            System.out.println("Erro (sobreposição de camas): " + e.getMessage());
         } catch (DataInvalidaException e) {
             System.out.println("Erro de validação de datas: " + e.getMessage());
         }
@@ -550,7 +588,7 @@ public class Menu {
     }
 
     private void mostrarPercentagemPressao() {
-        try{
+        try {
             System.out.println("PERCENTAGEM DE ENFERMARIAS EM PRESSAO");
             DataAvancada dataRef = DataAvancada.parseData(leitor.lerString("Introduza a data de referência (AAAA-MM-DD):"));
             double percentagem = AnalisadorEstatistico.calcularPercentagemEnfermariasEmPressao(hospital.getEnfermarias(), dataRef);
@@ -570,13 +608,17 @@ public class Menu {
      * @return opcao introduzida pelo utilizador dentro dos limites definidos
      */
     public int lerOpcao(int limiteInf, int limiteSup) {
-        int opcao;
-        while (true) {
+        int opcao = 0;
+        boolean opcaoValida = false;
+        while (!opcaoValida) {
             opcao = leitor.lerInteiro("");
             if (opcao >= limiteInf && opcao <= limiteSup) {
-                return opcao;
+                opcaoValida = true;
+            } else {
+                System.out.println("Opção inválida. Tem de ser entre " + limiteInf + " e " + limiteSup + ".");
             }
         }
+        return opcao;
     }
 
     private static String gerarBarraHorizontal(double taxa, char simbolo) {

@@ -88,8 +88,22 @@ public abstract class Enfermaria implements GestaoOcupacao, java.io.Serializable
      *
      * @param episodio -> episodio a adicionar ao historico da enfermaria
      */
-    public void adicionarEpisodio(Episodio episodio) throws CapacidadeExcedidaException{
-       int camasOcupadasNaData = this.calcularOcupacao(episodio.getDataAdmissao());
+    public void adicionarEpisodio(Episodio episodio) throws CapacidadeExcedidaException, CamaOcupadaException{
+       boolean haSobreposicao = false;
+       for (int i=0; i<episodios.size() && !haSobreposicao; i++){
+           Episodio epExistente = this.episodios.get(i);
+           if(epExistente.getIdCama()==episodio.getIdCama()){
+               boolean novoComecaAntesExistenteSair = ((epExistente.getDataAlta()==null) || (!episodio.getDataAdmissao().isMaior(epExistente.getDataAlta())));
+               boolean existenteComecaAntesNovoSair =((episodio.getDataAlta()==null)||(epExistente.getDataAdmissao().isMaior(episodio.getDataAlta())));
+               if(novoComecaAntesExistenteSair&& existenteComecaAntesNovoSair){
+                   haSobreposicao = true;
+               }
+           }
+       }
+       if(haSobreposicao) {
+           throw new CamaOcupadaException("Erro: A cama " + episodio.getIdCama() + " já está ocupada neste período!");
+       }
+        int camasOcupadasNaData = this.calcularOcupacao(episodio.getDataAdmissao());
        if (camasOcupadasNaData >= this.numCamas) {
            throw new CapacidadeExcedidaException("Erro: A enfermaria " + this.idEnfermaria + " já tem " + this.numCamas + " camas ocupadas na data,o que corresponde à sua capacidade máxima.");
        }

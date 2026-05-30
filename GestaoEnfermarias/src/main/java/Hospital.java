@@ -161,7 +161,9 @@ public class Hospital implements java.io.Serializable{
         } catch (CapacidadeExcedidaException e) {
             // Apanha especificamente os erros de lotação (ex: enfermaria já atingiu o limite)
             registoErros.add("Inconsistência nos dados de internamento: " + e.getMessage() + " [Linha: " + linha + "]");
-
+        } catch (CamaOcupadaException e){
+            //Apanha especificamente sobreposição de episódios numa cama (ex: dois episódios a ocorrer ao mesmo tempo na mesma cama)
+            registoErros.add("Sobreposição de datas na cama: " + e.getMessage() + " [Linha: " + linha + "]");
         } catch (Exception e) {
             // Apanha qualquer outro erro inesperado (rede de segurança final)
             registoErros.add("Erro crítico desconhecido: " + e.getMessage());
