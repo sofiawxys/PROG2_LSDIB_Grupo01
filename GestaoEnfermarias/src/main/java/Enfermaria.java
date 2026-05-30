@@ -1,3 +1,4 @@
+import java.util.Comparator;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -88,26 +89,26 @@ public abstract class Enfermaria implements GestaoOcupacao, java.io.Serializable
      *
      * @param episodio -> episodio a adicionar ao historico da enfermaria
      */
-    public void adicionarEpisodio(Episodio episodio) throws CapacidadeExcedidaException, CamaOcupadaException{
-       boolean haSobreposicao = false;
-       for (int i=0; i<episodios.size() && !haSobreposicao; i++){
-           Episodio epExistente = this.episodios.get(i);
-           if(epExistente.getIdCama()==episodio.getIdCama()){
-               boolean novoComecaAntesExistenteSair = ((epExistente.getDataAlta()==null) || (!episodio.getDataAdmissao().isMaior(epExistente.getDataAlta())));
-               boolean existenteComecaAntesNovoSair =((episodio.getDataAlta()==null)||(epExistente.getDataAdmissao().isMaior(episodio.getDataAlta())));
-               if(novoComecaAntesExistenteSair&& existenteComecaAntesNovoSair){
-                   haSobreposicao = true;
-               }
-           }
-       }
-       if(haSobreposicao) {
-           throw new CamaOcupadaException("Erro: A cama " + episodio.getIdCama() + " já está ocupada neste período!");
-       }
+    public void adicionarEpisodio(Episodio episodio) throws CapacidadeExcedidaException, CamaOcupadaException {
+        boolean haSobreposicao = false;
+        for (int i = 0; i < episodios.size() && !haSobreposicao; i++) {
+            Episodio epExistente = this.episodios.get(i);
+            if (epExistente.getIdCama() == episodio.getIdCama()) {
+                boolean novoComecaAntesExistenteSair = ((epExistente.getDataAlta() == null) || (!episodio.getDataAdmissao().isMaior(epExistente.getDataAlta())));
+                boolean existenteComecaAntesNovoSair = ((episodio.getDataAlta() == null) || (epExistente.getDataAdmissao().isMaior(episodio.getDataAlta())));
+                if (novoComecaAntesExistenteSair && existenteComecaAntesNovoSair) {
+                    haSobreposicao = true;
+                }
+            }
+        }
+        if (haSobreposicao) {
+            throw new CamaOcupadaException("Erro: A cama " + episodio.getIdCama() + " já está ocupada neste período!");
+        }
         int camasOcupadasNaData = this.calcularOcupacao(episodio.getDataAdmissao());
-       if (camasOcupadasNaData >= this.numCamas) {
-           throw new CapacidadeExcedidaException("Erro: A enfermaria " + this.idEnfermaria + " já tem " + this.numCamas + " camas ocupadas na data,o que corresponde à sua capacidade máxima.");
-       }
-       this.episodios.add(episodio);
+        if (camasOcupadasNaData >= this.numCamas) {
+            throw new CapacidadeExcedidaException("Erro: A enfermaria " + this.idEnfermaria + " já tem " + this.numCamas + " camas ocupadas na data,o que corresponde à sua capacidade máxima.");
+        }
+        this.episodios.add(episodio);
     }
 
     /**
@@ -259,8 +260,13 @@ public abstract class Enfermaria implements GestaoOcupacao, java.io.Serializable
     public int calcularAdmissoes(Data dataReferencia) {
         int admissoes = 0;
         for (Episodio ep : episodios) {
-            if (ep.getDataAdmissao().equals(dataReferencia)) {
-                admissoes++;
+            Data d = ep.getDataAdmissao();
+            if (d != null) {
+                boolean mesmaData = !d.isMaior(dataReferencia) && !dataReferencia.isMaior(d);
+                // Usa-se dupla negação do isMaior() pois o equals() e compareTo() da classe Data original rejeitam subclasses (DataAvancada) devido ao getClass().
+                if (mesmaData) {
+                    admissoes++;
+                }
             }
         }
         return admissoes;
@@ -269,13 +275,37 @@ public abstract class Enfermaria implements GestaoOcupacao, java.io.Serializable
     public int calcularAltas(Data dataReferencia) {
         int altas = 0;
         for (Episodio ep : episodios) {
-            if (ep.isFlagAlta() && ep.getDataAlta().equals(dataReferencia)) {
-                altas++;
+            Data d = ep.getDataAdmissao();
+            if (ep.isFlagAlta() && d != null) {
+                boolean mesmaData = !d.isMaior(dataReferencia) && !dataReferencia.isMaior(d);
+                // Usa-se dupla negação do isMaior() pois o equals() e compareTo() da classe Data original rejeitam subclasses (DataAvancada) devido ao getClass().
+                if (mesmaData) {
+                    altas++;
+                }
             }
         }
         return altas;
     }
 
+    public double calcularTurnover(Data dataReferencia) {
+        if (this.numCamas == 0) {
+            return 0.0;
+        }
+        int admissoes = this.calcularAdmissoes(dataReferencia);
+        int altas = this.calcularAltas(dataReferencia);
+        return ((double) (admissoes + altas) / this.numCamas) * 100.0;
+    }
+
+    public List<Episodio> getEpisodiosOrdenadosPorAdmissao() {
+        List<Episodio> episodiosOrdenados = new ArrayList<>(this.episodios);
+        episodiosOrdenados.sort(new Comparator<Episodio>() {
+            @Override
+            public int compare(Episodio e1, Episodio e2) {
+                return e1.getDataAdmissao().compareTo(e2.getDataAdmissao());
+            }
+        });
+        return episodiosOrdenados;
+    }
 }
 
 

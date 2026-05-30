@@ -1,6 +1,5 @@
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.io.FileNotFoundException;
 import java.io.File;
 
@@ -37,7 +36,7 @@ public class Menu {
                     System.out.println("Erro de datas: " + e.getMessage());
                 } catch (CapacidadeExcedidaException e) {
                     System.out.println("Capacidade excedida: " + e.getMessage());
-                }catch (CamaOcupadaException e){
+                } catch (CamaOcupadaException e) {
                     System.out.println("Erro de sobreposição de camas: " + e.getMessage());
                 }
                 break;
@@ -202,13 +201,13 @@ public class Menu {
 
     private void inserirEpisodio() {
         List<Enfermaria> existentes = hospital.getEnfermarias();
-        if(existentes.isEmpty()) {
+        if (existentes.isEmpty()) {
             System.out.println("Erro: Não existem enfermarias registadas. Crie uma enfermaria primeiro!");
             return;
         }
         System.out.println("Enfermarias Disponiveis:");
-        for(Enfermaria e : existentes) {
-            System.out.printf("ID: %-6s | Camas totais: %d\n", e.getIdEnfermaria(),e.getNumCamas());
+        for (Enfermaria e : existentes) {
+            System.out.printf("ID: %-6s | Camas totais: %d\n", e.getIdEnfermaria(), e.getNumCamas());
         }
         String idEnfermaria = leitor.lerString("\nID da enfermaria: ");
         Enfermaria enfermaria = hospital.procurarEnfermaria(idEnfermaria);
@@ -230,7 +229,7 @@ public class Menu {
             System.out.println("Episódio criado com sucesso!");
         } catch (CapacidadeExcedidaException e) {
             System.out.println("Erro (capacidade excedida): " + e.getMessage());
-        }catch(CamaOcupadaException e){
+        } catch (CamaOcupadaException e) {
             System.out.println("Erro (sobreposição de camas): " + e.getMessage());
         } catch (DataInvalidaException e) {
             System.out.println("Erro de validação de datas: " + e.getMessage());
@@ -393,13 +392,7 @@ public class Menu {
                 case 2:
                     Enfermaria enfermaria = hospital.procurarEnfermaria(leitor.lerString("Introduza o ID da Enfermaria: "));
                     if (enfermaria != null) {
-                        List<Episodio> episodios = new ArrayList<>(enfermaria.getEpisodios());
-                        episodios.sort(new Comparator<Episodio>() {
-                            @Override
-                            public int compare(Episodio e1, Episodio e2) {
-                                return e1.getDataAdmissao().compareTo(e2.getDataAdmissao());
-                            }
-                        });
+                        List<Episodio> episodios = new ArrayList<>(enfermaria.getEpisodiosOrdenadosPorAdmissao());
                         System.out.println("\n--- Episódios Ordenados (Admissão) ---");
                         for (Episodio ep : episodios) {
                             System.out.println(ep.toString());
@@ -443,7 +436,7 @@ public class Menu {
                 double percOcup = enfermaria.calcularTaxaOcupacao(dataAtual);
                 int admissoes = enfermaria.calcularAdmissoes(dataAtual);
                 int altas = enfermaria.calcularAltas(dataAtual);
-                double turnover = (double) (admissoes + altas) / totalCamas * 100;
+                double turnover = enfermaria.calcularTurnover(dataAtual);
                 String barra = gerarBarraHorizontal(percOcup, '#');
 
                 System.out.printf("%-12s | %-12s | %8d | %11d | %5.1f%% | %8.1f%% | %s%n",
@@ -460,10 +453,13 @@ public class Menu {
 
     private void mostrarGraficoBarras() {
         try {
-            Data dataRef = DataAvancada.parseData(leitor.lerString("Data de referência (AAAA-MM-DD): ")); //aqui guardamos a data numa variável do tipo Data e não DataAvancada, pois o método usado para a lista pede Data
+            Data dataRef = DataAvancada.parseData(leitor.lerString("\nData de referência (AAAA-MM-DD): ")); //aqui guardamos a data numa variável do tipo Data e não DataAvancada, pois o método usado para a lista pede Data
 
-            char simbolo = '#';
-
+            System.out.println("Escolha a métrica para o gráfico: ");
+            System.out.println("1. Taxa de Ocupação(%)");
+            System.out.println("2. Turnover (%)");
+            System.out.println("3. LoS médio (dias)");
+            int opcaoMetrica = lerOpcao(1, 3);
             System.out.println("Orientação:");
             System.out.println("1. Horizontal");
             System.out.println("2. Vertical");
@@ -474,64 +470,105 @@ public class Menu {
                 System.out.println("Não foram encontradas enfermarias registadas");
                 return;
             }
-
+            double[] valoresMetrica = new double[enfermarias.size()];
+            int[] tamanhosBarra = new int[enfermarias.size()];
+            String nomeMetrica = "";
+            char simbolo = '-';
+            switch (opcaoMetrica) {
+                case 1: {
+                    simbolo = '#';
+                    nomeMetrica = "OCUPAÇÃO (%)";
+                    break;
+                }
+                case 2: {
+                    simbolo = '+';
+                    nomeMetrica = "TURNOVER (%)";
+                    break;
+                }
+                case 3: {
+                    simbolo = '*';
+                    nomeMetrica = "LoS MÉDIO (DIAS)";
+                    break;
+                }
+            }
+            for (int i = 0; i < enfermarias.size(); i++) {
+                Enfermaria enfermaria = enfermarias.get(i);
+                switch (opcaoMetrica) {
+                    case 1: {
+                        valoresMetrica[i] = enfermaria.calcularTaxaOcupacao(dataRef);
+                        tamanhosBarra[i] = (int) Math.round(valoresMetrica[i] / 2.0);
+                        break;
+                    }
+                    case 2: {
+                        valoresMetrica[i] = enfermaria.calcularTurnover(dataRef);
+                        tamanhosBarra[i] = (int) Math.round(valoresMetrica[i] / 2.0);
+                        break;
+                    }
+                    case 3: {
+                        valoresMetrica[i] = enfermaria.calcularMediaLoS();
+                        tamanhosBarra[i] = (int) Math.round(valoresMetrica[i]);
+                        break;
+                    }
+                }
+                if (tamanhosBarra[i] < 0) {
+                    tamanhosBarra[i] = 0;
+                }
+                if (tamanhosBarra[i] > 50) {
+                    tamanhosBarra[i] = 50;
+                }
+            }
             if (orientacao == 1) {
-                graficoHorizontal(enfermarias, dataRef, simbolo);
+                graficoHorizontal(enfermarias, valoresMetrica, tamanhosBarra, simbolo, opcaoMetrica, nomeMetrica, dataRef);
             } else {
-                graficoVertical(enfermarias, dataRef, simbolo);
+                graficoVertical(enfermarias, tamanhosBarra, simbolo, opcaoMetrica, nomeMetrica, dataRef);
             }
         } catch (DataInvalidaException e) {
             System.out.println("Erro: " + e.getMessage());
         }
     }
 
-    private void graficoHorizontal(List<Enfermaria> enfermarias, Data dataRef, char simbolo) {
-        System.out.println("GRÁFICO HORIZONTAL DE OCUPAÇÃO ");
 
-        for (Enfermaria enfermaria : enfermarias) {
-            double taxaOcupacao = enfermaria.calcularTaxaOcupacao(dataRef);
-            int tamanhoBarra = (int) Math.round(taxaOcupacao / 2.0);
-            if (tamanhoBarra < 0) {
-                tamanhoBarra = 0;
-            }
+    private void graficoHorizontal(List<Enfermaria> enfermarias, double valoresMetrica[], int tamanhosBarra[], char simbolo, int opcaoMetrica, String nomeMetrica, Data dataRef) {
+        System.out.println("\nGRÁFICO HORIZONTAL DE " + nomeMetrica + " (" + dataRef.toString() + ")\n");
+        for (int i = 0; i < enfermarias.size(); i++) {
+            Enfermaria enfermaria = enfermarias.get(i);
             StringBuilder barra = new StringBuilder();
-            for (int i = 0; i < tamanhoBarra; i++) {
+            for (int j = 0; j < tamanhosBarra[i]; j++) {
                 barra.append(simbolo);
             }
-            System.out.printf("%-6s [%3.0f%%] [%s]\n",
-                    enfermaria.getIdEnfermaria(),
-                    taxaOcupacao,
-                    barra.toString());
+            if (opcaoMetrica == 3) {
+                System.out.printf("%-6s [%4.1f dias] [%s]\n", enfermaria.getIdEnfermaria(), valoresMetrica[i], barra.toString());
+            } else {
+                System.out.printf("%-6s [%3.0f%%] [%s]\n",
+                        enfermaria.getIdEnfermaria(),
+                        valoresMetrica[i],
+                        barra.toString());
+            }
         }
     }
 
-    private void graficoVertical(List<Enfermaria> enfermarias, Data dataRef, char simbolo) {
+    private void graficoVertical(List<Enfermaria> enfermarias, int[] alturas, char simbolo, int opcaoMetrica, String nomeMetrica, Data dataRef) {
         int numEnfermarias = enfermarias.size();
-        int[] alturas = new int[numEnfermarias];
         int alturaMax = 0;
 
-        for (int i = 0; i < numEnfermarias; i++) {
-            double taxaOcupacao = enfermarias.get(i).calcularTaxaOcupacao(dataRef);
-            alturas[i] = (int) Math.round(taxaOcupacao / 2.0); // 100% -> 50 de altura
-            if (alturas[i] < 0) {
-                alturas[i] = 0;
-            }
-            if (alturas[i] > 50) {
-                alturas[i] = 50;
-            }
-            if (alturas[i] > alturaMax) {
-                alturaMax = alturas[i];
+        for (int altura : alturas) {
+            if (altura > alturaMax) {
+                alturaMax = altura;
             }
         }
-        System.out.println("GRÁFICO VERTICAL DE OCUPAÇÃO(" + dataRef.toAnoMesDiaString() + ")\n");
+        System.out.println("\nGRÁFICO VERTICAL DE " + nomeMetrica + " (" + dataRef.toString() + ")\n");
 
         if (alturaMax == 0) {
-            System.out.println("As enfermarias selecionadas estão vazias nesta data.");
+            System.out.println("As enfermarias selecionadas têm um valor de 0 para esta métrica.");
+            return;
         }
         for (int nivel = alturaMax; nivel > 0; nivel--) {
             //eixo do y
-            System.out.printf("%4d%% |", nivel * 2);
-
+            if (opcaoMetrica == 3) {
+                System.out.printf("%4d |", nivel);
+            } else {
+                System.out.printf("%4d%% |", nivel * 2);
+            }
             for (int i = 0; i < numEnfermarias; i++) {
                 if (alturas[i] >= nivel) {
                     System.out.print("  " + simbolo + "  ");

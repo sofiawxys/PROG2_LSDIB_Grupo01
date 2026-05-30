@@ -8,6 +8,21 @@ import java.util.List;
  */
 public class AnalisadorEstatistico {
 
+    private static final double PESO_OCUPACAO =0.7;
+    private static final double PESO_TURNOVER= 0.3;
+
+    private static final int LIMITE_OCUP_1=85;
+    private static final int LIMITE_OCUP_2=90;
+    private static final int LIMITE_OCUP_3=95;
+    private static final int LIMITE_OCUP_4=100;
+
+    private static final int LIMITE_TURN_1=10;
+    private static final int LIMITE_TURN_2=20;
+    private static final int LIMITE_TURN_3=30;
+    private static final int LIMITE_TURN_4=40;
+
+    private static final double LIMITE_INDICE_BAIXO = 2.0;
+    private static final double LIMITE_INDICE_MODERADO = 3.5;
     /**
      * Req. Funcional 4 — Alteração percentual de camas.
      */
@@ -112,10 +127,10 @@ public class AnalisadorEstatistico {
                 // 1. Componente Ocupação (70%)
                 double percOcup = enfermaria.calcularTaxaOcupacao(dataReferencia);
                 int scoreOcup;
-                if (percOcup <= 85) scoreOcup = 1;
-                else if (percOcup <= 90) scoreOcup = 2;
-                else if (percOcup <= 95) scoreOcup = 3;
-                else if (percOcup <= 100) scoreOcup = 4;
+                if (percOcup <= LIMITE_OCUP_1) scoreOcup = 1;
+                else if (percOcup <= LIMITE_OCUP_2) scoreOcup = 2;
+                else if (percOcup <= LIMITE_OCUP_3) scoreOcup = 3;
+                else if (percOcup <= LIMITE_OCUP_4) scoreOcup = 4;
                 else scoreOcup = 5;
 
                 // 2. Componente Turnover (30%)
@@ -124,20 +139,20 @@ public class AnalisadorEstatistico {
 
                 double percTurnover = ((double) (admissoes + altas) / enfermaria.getNumCamas()) * 100.0;
                 int scoreTurnover;
-                if (percTurnover <= 10) scoreTurnover = 1;
-                else if (percTurnover <= 20) scoreTurnover = 2;
-                else if (percTurnover <= 30) scoreTurnover = 3;
-                else if (percTurnover <= 40) scoreTurnover = 4;
+                if (percTurnover <= LIMITE_TURN_1) scoreTurnover = 1;
+                else if (percTurnover <= LIMITE_TURN_2) scoreTurnover = 2;
+                else if (percTurnover <= LIMITE_TURN_3) scoreTurnover = 3;
+                else if (percTurnover <= LIMITE_TURN_4) scoreTurnover = 4;
                 else scoreTurnover = 5;
 
                 // 3. Cálculo do Índice Final
-                double indiceFinal = (0.7 * scoreOcup) + (0.3 * scoreTurnover);
+                double indiceFinal = (PESO_OCUPACAO * scoreOcup) + (PESO_TURNOVER * scoreTurnover);
                 indiceFinal = Math.round(indiceFinal * 10.0) / 10.0;
 
                 // 4. Interpretação/Classificação
                 String classificacao;
-                if (indiceFinal <= 2.0) classificacao = "Pressão Baixa";
-                else if (indiceFinal <= 3.5) classificacao = "Pressão Moderada";
+                if (indiceFinal <= LIMITE_INDICE_BAIXO) classificacao = "Pressão Baixa";
+                else if (indiceFinal <= LIMITE_INDICE_MODERADO) classificacao = "Pressão Moderada";
                 else classificacao = "Pressão Alta";
 
                 // Adiciona à lista
