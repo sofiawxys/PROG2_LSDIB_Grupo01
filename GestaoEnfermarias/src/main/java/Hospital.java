@@ -41,6 +41,10 @@ public class Hospital implements java.io.Serializable{
         return nome;
     }
 
+    public List<Enfermaria> getEnfermarias() {
+        return enfermarias;
+    }
+
     /**
      * Devolve o registo de erros encontrados no carregamento dos ficheiros
      *

@@ -7,7 +7,7 @@ import java.io.File;
 public class Menu {
     //CONSTANTES
     private static final int LIMITE_INF_OPCAO = 1;
-    private static final int LIMITE_SUP_OPCAO = 10;
+    private static final int LIMITE_SUP_OPCAO = 13;
     private static final int LIMITE_SUP_SUBOPCAO = 2;
 
     private Hospital hospital;
@@ -80,6 +80,15 @@ public class Menu {
                 mostrarGraficoBarras();
                 break;
             case 10:
+                alterarCamasEnfermarias();
+                break;
+            case 11:
+                mostrarPercentagemPressao();
+                break;
+            case 12:
+                mostrarRankingPressao();
+                break;
+            case 13:
                 System.out.println("A guardar a sessão atual...");
                 GestorFicheiros.guardarDados(hospital, "hospital_dados.dat");
                 System.out.println("A fechar o sistema...");
@@ -103,7 +112,10 @@ public class Menu {
         System.out.println("7. Apresentar listagens ordenadas");
         System.out.println("8. Mostrar tabela de ocupação");
         System.out.println("9. Mostrar grafico barras");
-        System.out.println("10. Sair");
+        System.out.println("10.Alterar camas totais");
+        System.out.println("11.Ver percentagem de enfermarias em pressão");
+        System.out.println("12.Mostrar Ranking do Indice de Pressão");
+        System.out.println("13.Sair");
         System.out.print("Escolha uma opção: ");
     }
 
@@ -383,8 +395,7 @@ public class Menu {
             for (int i = 0; i < 95; i++) {
                 System.out.print("-");
             }
-
-
+            System.out.println();
             int totalDias = dataInicio.calcularDiferenca(dataFim) + 1;
             DataAvancada dataAtual = new DataAvancada(dataInicio);
 
@@ -459,7 +470,7 @@ public class Menu {
     private void graficoVertical(List<Enfermaria> enfermarias, Data dataRef, char simbolo) {
         int numEnfermarias = enfermarias.size();
         int[] alturas = new int[numEnfermarias];
-        int alturaMax =0;
+        int alturaMax = 0;
 
         for (int i = 0; i < numEnfermarias; i++) {
             double taxaOcupacao = enfermarias.get(i).calcularTaxaOcupacao(dataRef);
@@ -476,17 +487,17 @@ public class Menu {
         }
         System.out.println("GRÁFICO VERTICAL DE OCUPAÇÃO(" + dataRef.toAnoMesDiaString() + ")\n");
 
-        if(alturaMax ==0){
+        if (alturaMax == 0) {
             System.out.println("As enfermarias selecionadas estão vazias nesta data.");
         }
-        for(int nivel = alturaMax; nivel > 0; nivel--){
+        for (int nivel = alturaMax; nivel > 0; nivel--) {
             //eixo do y
-            System.out.printf("%4d%% |", nivel*2);
+            System.out.printf("%4d%% |", nivel * 2);
 
-            for(int i = 0; i < numEnfermarias; i++){
-                if(alturas[i] >= nivel){
-                    System.out.print("  "+ simbolo +"  ");
-                } else{
+            for (int i = 0; i < numEnfermarias; i++) {
+                if (alturas[i] >= nivel) {
+                    System.out.print("  " + simbolo + "  ");
+                } else {
                     System.out.print("     ");
                 }
             }
@@ -494,23 +505,60 @@ public class Menu {
         }
         //eixo do x
         System.out.print("-------");
-        for(int i = 0; i < numEnfermarias; i++){
+        for (int i = 0; i < numEnfermarias; i++) {
             System.out.print("-----");
         }
         System.out.println();
 
         //legenda
         System.out.print("       ");
-        for( Enfermaria enfermaria : enfermarias){
+        for (Enfermaria enfermaria : enfermarias) {
             String id = enfermaria.getIdEnfermaria();
-            if(id.length()>4){
-                id = id.substring(0,4); // corta o id se for muito grande
+            if (id.length() > 4) {
+                id = id.substring(0, 4); // corta o id se for muito grande
             }
             System.out.printf("%-4s ", id);
         }
         System.out.println("\n");
     }
 
+    private void alterarCamasEnfermarias() {
+        System.out.println("ALTERAR CAMAS TOTAIS EM TODAS AS ENFERMARIAS");
+        double percentagem = leitor.lerDouble("Introduza a percentagem de variação (ex: 10 para aumentar 10%, -5 para reduzir 5%):");
+
+        AnalisadorEstatistico.alterarCamas(hospital.getEnfermarias(), percentagem);
+        System.out.println("Camas alteradas com sucesso em todas as enfermarias.");
+    }
+
+    private void mostrarRankingPressao() {
+        try {
+            System.out.println("\nRANKING DE ENFERMARIAS POR PRESSAO");
+            DataAvancada dataRef = DataAvancada.parseData(leitor.lerString("Introduza a data de referência (AAAA-MM-DD):"));
+            List<AnalisadorEstatistico.ResultadoPressao> ranking = AnalisadorEstatistico.calcularRankingPressao(hospital.getEnfermarias(), dataRef);
+
+            if (ranking.isEmpty()) {
+                System.out.println("Não existem enfermarias registadas com camas para calcular o ranking.");
+                return;
+            }
+            System.out.println("RANKING DE ENFERMARIAS POR PRESSAO (ordem decrescente)");
+            for (AnalisadorEstatistico.ResultadoPressao rp : ranking) {
+                System.out.printf("Enfermaria: %-6s | Score Ocup: %d | Score Turnover: %d | Índice de Pressão: %.1f | [%s]\n", rp.getEnfermaria().getIdEnfermaria(), rp.getScoreOcup(), rp.getScoreTurnover(), rp.getIndicePressao(), rp.getClassificacao());
+            }
+        } catch (DataInvalidaException e) {
+            System.out.println("Erro: " + e.getMessage());
+        }
+    }
+
+    private void mostrarPercentagemPressao() {
+        try{
+            System.out.println("PERCENTAGEM DE ENFERMARIAS EM PRESSAO");
+            DataAvancada dataRef = DataAvancada.parseData(leitor.lerString("Introduza a data de referência (AAAA-MM-DD):"));
+            double percentagem = AnalisadorEstatistico.calcularPercentagemEnfermariasEmPressao(hospital.getEnfermarias(), dataRef);
+            System.out.printf("Percentagem de enfermarias em pressão (>85%%): %.2f%%\n", percentagem);
+        } catch (DataInvalidaException e) {
+            System.out.println("Erro: " + e.getMessage());
+        }
+    }
 
 //MÉTODOS AUXILIARES
 
@@ -535,19 +583,19 @@ public class Menu {
         // 50 caracteres = 100%, por isso: taxa * 50 / 100
         int preenchidos = (int) (taxa * 50 / 100);
         // Garantir que não ultrapassa 50
-        if (preenchidos > 50){
+        if (preenchidos > 50) {
             preenchidos = 50;
         }
 
         int vazios = 50 - preenchidos;
-       StringBuilder barra = new StringBuilder();
+        StringBuilder barra = new StringBuilder();
         for (int i = 0; i < preenchidos; i++) {
             barra.append(simbolo);
         }
-        for(int i=0; i< vazios; i++){
+        for (int i = 0; i < vazios; i++) {
             barra.append(" ");
         }
-        return "["+barra.toString()+"]";
+        return "[" + barra.toString() + "]";
     }
 }
 
