@@ -20,7 +20,7 @@ class AnalisadorEstatisticoTest {
     private EnfermariaPsiquiatrica ep1;
 
     @BeforeEach
-    void setUp() throws  DataInvalidaException, CapacidadeExcedidaException {
+    void setUp() throws DataInvalidaException, CapacidadeExcedidaException, CamaOcupadaException {
         dataRef = new Data(2025, 3, 20);
 
         eg1 = new EnfermariaGeral("eg1", 4, 2);
@@ -284,7 +284,7 @@ class AnalisadorEstatisticoTest {
 
     @Test
     @DisplayName("IT1 — parseData() converte string AAAA-MM-DD")
-    void testData_parseData() {
+    void testData_parseData() throws DataInvalidaException {
         Data d = DataAvancada.parseData("2025-03-20");
         assertEquals(2025, d.getAno());
         assertEquals(3,    d.getMes());
@@ -315,5 +315,130 @@ class AnalisadorEstatisticoTest {
         Data d2 = new Data(2025, 3, 7);
         assertEquals(6, d1.calcularDiferenca(d2));
         assertEquals(6, d2.calcularDiferenca(d1));
+    }
+
+    // =========================================================================
+// EXCEÇÕES — CapacidadeExcedidaException e DataInvalidaException
+// =========================================================================
+
+    @Test
+    @DisplayName("EXCEÇÃO — Deve lançar CapacidadeExcedidaException ao ultrapassar o limite de camas")
+    void testExcecao_capacidadeExcedida() {
+        // Na data 2025-03-20, as camas 3 e 4 estão ativas (2 de 4)
+        // Precisamos de uma data onde as 4 camas estejam todas ocupadas
+        // eg1 tem 4 camas — vamos forçar 4 ocupadas na mesma data numa nova enfermaria
+        EnfermariaGeral egTeste = new EnfermariaGeral("egTeste", 2, 0);
+        assertThrows(CapacidadeExcedidaException.class, () -> {
+            egTeste.adicionarEpisodio(new Episodio(1, new Data(2025, 3, 10), null));
+            egTeste.adicionarEpisodio(new Episodio(2, new Data(2025, 3, 10), null));
+            // 3º episódio numa enfermaria de 2 camas — deve lançar a exceção
+            egTeste.adicionarEpisodio(new Episodio(3, new Data(2025, 3, 10), null));
+        });
+    }
+
+    @Test
+    @DisplayName("EXCEÇÃO — Deve lançar DataInvalidaException quando a alta é anterior à admissão")
+    void testExcecao_dataInvalida() {
+        Data dataAdmissao = new Data(2025, 3, 10);
+        Data dataAlta     = new Data(2025, 3, 1);
+        assertThrows(DataInvalidaException.class, () -> {
+            new Episodio(99, dataAdmissao, dataAlta);
+        });
+    }
+
+    @Test
+    @DisplayName("EXCEÇÃO — Deve lançar CamaOcupadaException quando a mesma cama é usada em datas sobrepostas")
+    void testExcecao_camaOcupada() {
+        assertThrows(CamaOcupadaException.class, () -> {
+            eg1.adicionarEpisodio(new Episodio(4, new Data(2025, 3, 19), null));
+        });
+    }
+
+// =========================================================================
+// RF6 — calcularAdmissoes e calcularAltas (base do Turnover)
+// =========================================================================
+
+    @Test
+    @DisplayName("Turnover — calcularAdmissoes conta corretamente num dia com admissões")
+    void testCalcularAdmissoes_comAdmissoes() {
+        assertEquals(5, ep1.calcularAdmissoes(new Data(2025, 3, 10)));
+    }
+
+    @Test
+    @DisplayName("Turnover — calcularAdmissoes devolve 0 num dia sem admissões")
+    void testCalcularAdmissoes_semAdmissoes() {
+        assertEquals(0, ep1.calcularAdmissoes(new Data(2025, 3, 11)));
+    }
+
+    @Test
+    @DisplayName("Turnover — calcularAltas conta corretamente num dia com altas")
+    void testCalcularAltas_comAltas() {
+        assertEquals(1, eg1.calcularAltas(new Data(2025, 3, 7)));
+    }
+
+    @Test
+    @DisplayName("Turnover — calcularAltas devolve 0 num dia sem altas")
+    void testCalcularAltas_semAltas() {
+        assertEquals(0, eg1.calcularAltas(new Data(2025, 3, 15)));
+    }
+
+// =========================================================================
+// SERIALIZAÇÃO — GestorFicheiros
+// =========================================================================
+
+    @Test
+    @DisplayName("Serialização — Deve guardar e recuperar o Hospital mantendo nome e enfermarias")
+    void testSerializacaoHospital() {
+        String ficheiroTeste = "teste_hospital_temp.dat";
+        Hospital hospitalOriginal = new Hospital("Hospital Curry Cabral");
+        hospitalOriginal.adicionarEnfermaria(new EnfermariaGeral("EG_Teste", 10, 2));
+
+        GestorFicheiros.guardarDados(hospitalOriginal, ficheiroTeste);
+        Hospital hospitalRecuperado = GestorFicheiros.lerDados(ficheiroTeste);
+
+        assertNotNull(hospitalRecuperado);
+        assertEquals("Hospital Curry Cabral", hospitalRecuperado.getNome());
+        assertNotNull(hospitalRecuperado.procurarEnfermaria("EG_Teste"));
+
+        new java.io.File(ficheiroTeste).delete();
+    }
+
+    @Test
+    @DisplayName("Serialização — Hospital recuperado preserva os episódios das enfermarias")
+    void testSerializacaoComEpisodios() throws DataInvalidaException, CapacidadeExcedidaException, CamaOcupadaException {
+        String ficheiroTeste = "teste_episodios_temp.dat";
+        Hospital h = new Hospital("Hospital Teste");
+        EnfermariaGeral eg = new EnfermariaGeral("EG_Serial", 5, 1);
+        eg.adicionarEpisodio(new Episodio(1, new Data(2025, 4, 1), new Data(2025, 4, 5)));
+        h.adicionarEnfermaria(eg);
+
+        GestorFicheiros.guardarDados(h, ficheiroTeste);
+        Hospital hRecuperado = GestorFicheiros.lerDados(ficheiroTeste);
+
+        assertNotNull(hRecuperado);
+        Enfermaria egRecuperada = hRecuperado.procurarEnfermaria("EG_Serial");
+        assertNotNull(egRecuperada);
+        assertEquals(1, egRecuperada.getEpisodios().size());
+
+        new java.io.File(ficheiroTeste).delete();
+    }
+
+    // Testes extra para DataAvancada
+    @Test
+    @DisplayName("IT1 — parseData() lança DataInvalidaException com formato inválido")
+    void testData_parseData_invalida() {
+        assertThrows(DataInvalidaException.class, () -> {
+            DataAvancada.parseData("20/03/2025");
+        });
+    }
+
+    @Test
+    @DisplayName("IT1 — avancarUmDia() avança o ano no último dia")
+    void testData_avancarAno() {
+        DataAvancada d = new DataAvancada(2025, 12, 31);
+        d.avancarUmDia();
+        assertEquals(2026, d.getAno());
+        assertEquals(1, d.getMes());
+        assertEquals(1, d.getDia());
     }
 }
