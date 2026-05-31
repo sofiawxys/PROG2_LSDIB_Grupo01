@@ -33,7 +33,7 @@ public class GestorFicheiros {
             fileIn.close();
             System.out.println("Dados carregados do ficheiro " + nomeFicheiro + " com sucesso");
         } catch (IOException e) {
-            System.out.println("Aviso: Ficheiro " + nomeFicheiro + " não encontrado. A inciar um sitema vazio...");
+            System.out.println("Aviso: Ficheiro " + nomeFicheiro + " não encontrado. A iniciar um sitema vazio...");
         } catch (ClassNotFoundException c) {
             System.out.println("Erro ao ler dados");
             c.printStackTrace();
