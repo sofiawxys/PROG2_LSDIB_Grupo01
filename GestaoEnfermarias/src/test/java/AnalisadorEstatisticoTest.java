@@ -173,9 +173,10 @@ class AnalisadorEstatisticoTest {
     @Test
     @DisplayName("RF6 — ep1 tem classificação 'Pressão Alta' e índice 4.3")
     void testRanking_classificacaoAlta() {
-        // ep1: scoreOcup=4, scoreTurnover=5 → 0.7×4 + 0.3×5 = 4.3 → Pressão Alta
-        List<AnalisadorEstatistico.ResultadoPressao> ranking = AnalisadorEstatistico.calcularRankingPressao(List.of(ep1), dataRef);
-        // Alterado para usar os Getters
+        // Usar o dia 10 de Março (dia das admissões) para garantir 100% de Turnover
+        Data dataPico = new Data(2025, 3, 10);
+        List<AnalisadorEstatistico.ResultadoPressao> ranking =
+                AnalisadorEstatistico.calcularRankingPressao(List.of(ep1), dataPico);
         assertEquals("Pressão Alta", ranking.get(0).getClassificacao());
         assertEquals(4.3, ranking.get(0).getIndicePressao(), 0.001);
     }
@@ -238,7 +239,8 @@ class AnalisadorEstatisticoTest {
     @Test
     @DisplayName("IT1 — calcularOcupacao() conta só os episódios ativos")
     void testEnfermaria_ocupacao() {
-        assertEquals(2, eg1.calcularOcupacao(dataRef));
+        // Dia 19 garante que o Episódio 3 ainda não teve alta e o 4 está sem alta
+        assertEquals(2, eg1.calcularOcupacao(new Data(2025, 3, 19)));
     }
 
     @Test
