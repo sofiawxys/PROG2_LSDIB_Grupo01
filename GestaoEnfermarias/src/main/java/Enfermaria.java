@@ -9,7 +9,7 @@ import java.util.ArrayList;
 public abstract class Enfermaria implements GestaoOcupacao, java.io.Serializable {
 
     //CONSTANTE
-    private static final int LIMITE_PRESSAO = 85; //mudar para double
+    private static final int LIMITE_PRESSAO = 85;
 
     //VARIÁVEIS
     private String idEnfermaria;

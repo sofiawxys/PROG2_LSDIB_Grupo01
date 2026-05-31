@@ -23,6 +23,7 @@ public class AnalisadorEstatistico {
 
     private static final double LIMITE_INDICE_BAIXO = 2.0;
     private static final double LIMITE_INDICE_MODERADO = 3.5;
+
     /**
      * Req. Funcional 4 — Alteração percentual de camas.
      */
