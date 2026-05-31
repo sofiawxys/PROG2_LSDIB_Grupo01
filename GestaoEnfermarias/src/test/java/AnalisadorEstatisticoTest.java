@@ -441,4 +441,32 @@ class AnalisadorEstatisticoTest {
         assertEquals(1, d.getMes());
         assertEquals(1, d.getDia());
     }
+
+    // =========================================================================
+// Turnover — calcularTurnover
+// =========================================================================
+
+    @Test
+    @DisplayName("Turnover — calcularTurnover dá 100% num dia de grande rotatividade")
+    void testCalcularTurnover_calculoMatematico() {
+        // ep1 teve 5 admissões para 5 camas no dia 2025-03-10 → (5+0)/5 * 100 = 100%
+        double turnover = ep1.calcularTurnover(new Data(2025, 3, 10));
+        assertEquals(100.0, turnover, 0.001);
+    }
+
+    @Test
+    @DisplayName("Turnover — calcularTurnover devolve 0.0 num dia sem movimento")
+    void testCalcularTurnover_semMovimento() {
+        // eg2 não tem episódios nenhuns
+        double turnover = eg2.calcularTurnover(new Data(2025, 3, 10));
+        assertEquals(0.0, turnover, 0.001);
+    }
+
+    @Test
+    @DisplayName("Turnover — Escudo contra divisão por zero devolve 0.0 se não houver camas")
+    void testCalcularTurnover_divisaoPorZero() {
+        EnfermariaGeral egZero = new EnfermariaGeral("egZero", 0, 0);
+        double turnover = egZero.calcularTurnover(new Data(2025, 3, 10));
+        assertEquals(0.0, turnover, 0.001);
+    }
 }

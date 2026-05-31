@@ -275,7 +275,7 @@ public abstract class Enfermaria implements GestaoOcupacao, java.io.Serializable
     public int calcularAltas(Data dataReferencia) {
         int altas = 0;
         for (Episodio ep : episodios) {
-            Data d = ep.getDataAdmissao();
+            Data d = ep.getDataAlta();
             if (ep.isFlagAlta() && d != null) {
                 boolean mesmaData = !d.isMaior(dataReferencia) && !dataReferencia.isMaior(d);
                 // Usa-se dupla negação do isMaior() pois o equals() e compareTo() da classe Data original rejeitam subclasses (DataAvancada) devido ao getClass().
