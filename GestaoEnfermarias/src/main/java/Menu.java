@@ -450,6 +450,10 @@ public class Menu {
             DataAvancada dataInicio = DataAvancada.parseData(leitor.lerString("Data de início (AAAA-MM-DD): "));
             DataAvancada dataFim = DataAvancada.parseData(leitor.lerString("Data de fim (AAAA-MM-DD): "));
 
+            if(!dataFim.isMaior(dataInicio)&& !dataFim.equals(dataInicio)) {
+                System.out.println("Erro: a data de fim tem de ser igual ao anterior à data de ínicio.");
+                return;
+            }
             // Cabeçalho
             System.out.println();
             System.out.printf("%-12s | %-12s | %8s | %11s | %6s | %9s | %s%n",
