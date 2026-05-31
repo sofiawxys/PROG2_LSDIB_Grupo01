@@ -140,7 +140,7 @@ public class Menu {
     }
 
     /**
-     * ubmenu para inserir enfermaria ou episódio pela consola.
+     * Submenu para inserir enfermaria ou episódio pela consola.
      */
     private void inserirDadosConsola() { // REVER ENFERMARIA POR PARÂMETRO???
         System.out.println("\n1. Inserir enfermaria");
@@ -450,8 +450,8 @@ public class Menu {
             DataAvancada dataInicio = DataAvancada.parseData(leitor.lerString("Data de início (AAAA-MM-DD): "));
             DataAvancada dataFim = DataAvancada.parseData(leitor.lerString("Data de fim (AAAA-MM-DD): "));
 
-            if(!dataFim.isMaior(dataInicio)&& !dataFim.equals(dataInicio)) {
-                System.out.println("Erro: a data de fim tem de ser igual ao anterior à data de ínicio.");
+            if (!dataFim.isMaior(dataInicio) && !dataFim.equals(dataInicio)) {
+                System.out.println("Erro: a data de fim tem de ser igual ou anterior à data de ínicio.");
                 return;
             }
             // Cabeçalho

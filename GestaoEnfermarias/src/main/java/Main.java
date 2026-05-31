@@ -1,5 +1,5 @@
 /**
- * Classe principal do program.
+ * Classe principal do programa.
  * Atua exclusivamente como o ponto de entrada da aplicação, delegando toda a lógica
  * de apresentação, controlo e execução para a classe Menu.
  */
