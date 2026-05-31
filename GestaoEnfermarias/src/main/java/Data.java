@@ -41,7 +41,7 @@ public class Data implements java.io.Serializable {
     /**
      * Número de dias de cada mês do ano.
      */
-    private static int[] diasPorMes = {  0, 31, 28, 31, 30, 31, 30, 31, 31, 30,
+    private static int[] diasPorMes = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30,
             31, 30, 31};
 
     /**
@@ -64,6 +64,7 @@ public class Data implements java.io.Serializable {
         this.mes = mes;
         this.dia = dia;
     }
+
     /**
      * Constrói uma instância de Data com a data por omissÃ£o.
      */
@@ -72,6 +73,7 @@ public class Data implements java.io.Serializable {
         mes = data.mes;
         dia = data.dia;
     }
+
     /**
      * Constrói uma instância de Data com a data por omissÃ£o.
      */
@@ -159,7 +161,7 @@ public class Data implements java.io.Serializable {
      *
      * @param outraData a outra data com a qual se compara a data
      * @return true se a data for maior do que a data recebida por parÃ¢metro,
-     *         caso contrÃ¡rio devolve false
+     * caso contrÃ¡rio devolve false
      */
     public boolean isMaior(Data outraData) {
         int totalDias = contarDias();
@@ -173,9 +175,9 @@ public class Data implements java.io.Serializable {
      * parâmetro.
      *
      * @param outraData a outra data com a qual se compara a data para calcular
-     *        a diferença do número de dias
+     *                  a diferença do número de dias
      * @return diferença em número de dias entre a data e a data recebida por
-     *         parâmetro
+     * parâmetro
      */
     public int calcularDiferenca(Data outraData) {
         int totalDias = this.contarDias();
@@ -189,13 +191,13 @@ public class Data implements java.io.Serializable {
      * parâmetro com ano, mês e dia
      *
      * @param ano o ano da data com a qual se compara a data para calcular a
-     *        diferença do número de dias
+     *            diferença do número de dias
      * @param mes o mês da data com a qual se compara a data para calcular a
-     *        diferença do número de dias
+     *            diferença do número de dias
      * @param dia o dia da data com a qual se compara a data para calcular a
-     *        diferença do número de dias
+     *            diferença do número de dias
      * @return diferença em número de dias entre a data e a data recebida por
-     *         parâmetro com ano, mês e dia
+     * parâmetro com ano, mês e dia
      */
     public int calcularDiferenca(int ano, int mes, int dia) {
         int totalDias = contarDias();
@@ -211,7 +213,7 @@ public class Data implements java.io.Serializable {
      *
      * @param ano o ano a validar
      * @return true se o ano passado por parâmetro for bissexto, caso contrário
-     *         devolve false
+     * devolve false
      */
     public static boolean isAnoBissexto(int ano) {
         return ano % 4 == 0 && ano % 100 != 0 || ano % 400 == 0;
@@ -257,8 +259,9 @@ public class Data implements java.io.Serializable {
         }
         return true;
     }
-    public int compareTo(Object data){
-        Data d = (Data)data;
+
+    public int compareTo(Object data) {
+        Data d = (Data) data;
         if (this.isMaior(d))
             return 1;
         else if (this.equals(d))

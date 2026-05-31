@@ -10,7 +10,7 @@ import java.util.Scanner;
  * Entidade central do programa que representa o complexo hospitalar
  * Responsavel por gerir a lista de todas as enfermarias, processar o carregamento de dados a partir de ficheiros CSV, manter um log de erros
  */
-public class Hospital implements java.io.Serializable{
+public class Hospital implements java.io.Serializable {
 
     //VARIAVEIS
     private String nome;
@@ -161,7 +161,7 @@ public class Hospital implements java.io.Serializable{
         } catch (CapacidadeExcedidaException e) {
             // Apanha especificamente os erros de lotação (ex: enfermaria já atingiu o limite)
             registoErros.add("Inconsistência nos dados de internamento: " + e.getMessage() + " [Linha: " + linha + "]");
-        } catch (CamaOcupadaException e){
+        } catch (CamaOcupadaException e) {
             //Apanha especificamente sobreposição de episódios numa cama (ex: dois episódios a ocorrer ao mesmo tempo na mesma cama)
             registoErros.add("Sobreposição de datas na cama: " + e.getMessage() + " [Linha: " + linha + "]");
         } catch (Exception e) {
@@ -298,7 +298,7 @@ public class Hospital implements java.io.Serializable{
     }
 
     /**
-     * Cria uma copia da lista de enfermarias e ordena-a por ordem decrescente de taxa de ocupacao na data fornecida
+     * Cria uma cópia da lista de enfermarias e ordena-a por ordem decrescente de taxa de ocupacao na data fornecida
      *
      * @param dataReferencia -> data de referencia
      * @return lista ordenada de enfermarias por taxa de ocupacao numa certa data (ordem decrescente)

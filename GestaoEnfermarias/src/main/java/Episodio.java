@@ -14,11 +14,12 @@ public class Episodio implements java.io.Serializable {
     //CONSTRUTOR
 
     /**
-     * Construtor que cria um novo episodio de internamento, validando se a data de alta e de admissao sao coerentes
+     * Construtor que cria um novo episódio de internamento, validando se as datas de alta e de admissão são coerentes.
      *
-     * @param idCama       -> identificador da cama do paciente na enfermaria
-     * @param dataAdmissao -> data de admissao do paciente na enfermaria
-     * @param dataAlta     -> data de alta do paciente da enfermaria
+     * @param idCama       identificador da cama do paciente na enfermaria
+     * @param dataAdmissao data de admissão do paciente na enfermaria
+     * @param dataAlta     data de alta do paciente da enfermaria (pode ser null se ainda internado)
+     * @throws DataInvalidaException se a data de alta fornecida for cronologicamente anterior à data de admissão
      */
     public Episodio(int idCama, Data dataAdmissao, Data dataAlta) throws DataInvalidaException {
         this.idCama = idCama;
@@ -120,6 +121,7 @@ public class Episodio implements java.io.Serializable {
      * Define a data de admissao do paciente na enfermaria
      *
      * @param d -> data de admissao
+     * @throws DataInvalidaException se a nova data gerar uma incoerência cronológica com a data já existente
      */
     public void setDataAdmissao(Data d) throws DataInvalidaException {
         if (this.dataAlta != null && d.isMaior(this.dataAlta)) {
@@ -133,6 +135,7 @@ public class Episodio implements java.io.Serializable {
      * Define a data de alta do paciente da enfermaria
      *
      * @param dataAlta -> data de alta
+     * @throws DataInvalidaException se a nova data gerar uma incoerência cronológica com a data já existente
      */
     public void setDataAlta(Data dataAlta) throws DataInvalidaException {
         if (dataAlta != null && dataAdmissao.isMaior(dataAlta)) {

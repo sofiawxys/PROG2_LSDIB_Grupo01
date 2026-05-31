@@ -88,6 +88,8 @@ public abstract class Enfermaria implements GestaoOcupacao, java.io.Serializable
      * Regista um novo episodio de internamento no historico desta enfermaria
      *
      * @param episodio -> episodio a adicionar ao historico da enfermaria
+     * @throws CapacidadeExcedidaException se a enfermaria já tiver atingido o limite máximo de camas na data de admissão
+     * @throws CamaOcupadaException        se a cama solicitada já estiver atribuída a outro paciente com datas sobrepostas
      */
     public void adicionarEpisodio(Episodio episodio) throws CapacidadeExcedidaException, CamaOcupadaException {
         boolean haSobreposicao = false;
@@ -220,7 +222,7 @@ public abstract class Enfermaria implements GestaoOcupacao, java.io.Serializable
     }
 
     /**
-     * Encontra o tempo minimio de internamento em dias registado nos historico de episodios concluidos
+     * Encontra o tempo minimo de internamento em dias registado nos historico de episodios concluidos
      *
      * @return -> minimo dos LoS
      */
@@ -257,6 +259,12 @@ public abstract class Enfermaria implements GestaoOcupacao, java.io.Serializable
         return maxLoS;
     }
 
+    /**
+     * Conta o numero total de admissoes registadas na enfermaria numa data especifica
+     *
+     * @param dataReferencia a data a ser analisada
+     * @return total de admissoes nesse dia
+     */
     public int calcularAdmissoes(Data dataReferencia) {
         int admissoes = 0;
         for (Episodio ep : episodios) {
@@ -272,6 +280,12 @@ public abstract class Enfermaria implements GestaoOcupacao, java.io.Serializable
         return admissoes;
     }
 
+    /**
+     * Conta o numero total de altas registadas na enfermaria numa data especifica
+     *
+     * @param dataReferencia a data a ser analisada
+     * @return o total de altas nesse dia
+     */
     public int calcularAltas(Data dataReferencia) {
         int altas = 0;
         for (Episodio ep : episodios) {
@@ -287,6 +301,13 @@ public abstract class Enfermaria implements GestaoOcupacao, java.io.Serializable
         return altas;
     }
 
+    /**
+     * Calcula a taxa de turnover da enfermaria, avaliando o fluxo de entradas e saídas
+     * em relação ao total de camas disponíveis.
+     *
+     * @param dataReferencia a data a ser analisada
+     * @return a percentagem de turnover na data fornecida
+     */
     public double calcularTurnover(Data dataReferencia) {
         if (this.numCamas == 0) {
             return 0.0;
@@ -296,6 +317,11 @@ public abstract class Enfermaria implements GestaoOcupacao, java.io.Serializable
         return ((double) (admissoes + altas) / this.numCamas) * 100.0;
     }
 
+    /**
+     * Devolve uma lista de todos os episódios da enfermaria ordenados cronologicamente pela data de admissão.
+     *
+     * @return lista ordenada de episódios
+     */
     public List<Episodio> getEpisodiosOrdenadosPorAdmissao() {
         List<Episodio> episodiosOrdenados = new ArrayList<>(this.episodios);
         episodiosOrdenados.sort(new Comparator<Episodio>() {

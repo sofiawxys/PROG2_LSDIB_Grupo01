@@ -1,5 +1,20 @@
+/**
+ * Classe utilitária responsável por gerar um conjunto de dados predefinidos
+ * Facilita os testes e a demonstração das funcionalidades do sitema, povoando o hospital
+ * com enfermarias e episodios clinicos sem necessidade de inserçao manual ou leitura de ficheiros
+ */
 public class GeradorDados {
-    public static void criarDadosAutomaticos(Hospital hospital) throws DataInvalidaException, CapacidadeExcedidaException, CamaOcupadaException{
+    /**
+     * Cria e insere automaticamente dados ficticios na instancia do hospital fornecida.
+     * Gera instancias dos diferentes tipos de enfermaria (Geral, Psiquiátrica e Cuidados Intensivos)
+     * e preenche-as com varios episodios de internamento e recursos
+     *
+     * @param hospital a instancia do hospital onde os dados gerados serão inseridos
+     * @throws DataInvalidaException       se houver alguma incoerência cronológica nas datas dos episódios gerados
+     * @throws CapacidadeExcedidaException se a geração de dados tentar ultrapassar o limite de camas da enfermaria
+     * @throws CamaOcupadaException        se ocorrer uma sobreposição forçada de datas na mesma cama
+     */
+    public static void criarDadosAutomaticos(Hospital hospital) throws DataInvalidaException, CapacidadeExcedidaException, CamaOcupadaException {
         EnfermariaGeral eg1 = new EnfermariaGeral("eg1", 4, 2);
         eg1.adicionarRecurso("Cadeira de rodas");
         eg1.adicionarRecurso("Ventilador");

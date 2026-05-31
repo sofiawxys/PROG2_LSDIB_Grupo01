@@ -3,6 +3,11 @@ import java.util.ArrayList;
 import java.io.FileNotFoundException;
 import java.io.File;
 
+/**
+ * Classe principal que substitui o Main da Iteração I.
+ * Gere o ciclo do menu, delega a leitura ao LeitorConsola e chama os métodos das restantes classes.
+ * Contém 13 opções.
+ */
 public class Menu {
     //CONSTANTES
     private static final int LIMITE_INF_OPCAO = 1;
@@ -12,12 +17,21 @@ public class Menu {
     private Hospital hospital;
     private LeitorConsola leitor;
 
+    /**
+     * Construtor da classe Menu.
+     * Inicializa a interface principal do programa, instanciando a entidade central do hopsital
+     * (com o nome predefinido "Hospital S.João") e o leitor de consola responsável por gerir as interações com o utilizador.
+     */
     public Menu() {
 
         this.hospital = new Hospital("Hospital S.João");
         this.leitor = new LeitorConsola();
     }
 
+    /**
+     * Ciclo principal do menu.
+     * Chama mostrarMenu() e executarOpcao() em loop até o utilizador sair.
+     */
     public void iniciar() {
         int opcao = 0;
         while (opcao != LIMITE_SUP_OPCAO) {
@@ -27,6 +41,11 @@ public class Menu {
         }
     }
 
+    /**
+     * Switch que distribui a execução pelas diferentes funcionalidades.
+     *
+     * @param opcao opcao escolhida pelo utilizador
+     */
     private void executarOpcao(int opcao) {
         switch (opcao) {
             case 1:
@@ -120,6 +139,9 @@ public class Menu {
         System.out.print("Escolha uma opção: ");
     }
 
+    /**
+     * ubmenu para inserir enfermaria ou episódio pela consola.
+     */
     private void inserirDadosConsola() { // REVER ENFERMARIA POR PARÂMETRO???
         System.out.println("\n1. Inserir enfermaria");
         System.out.println("2. Inserir episódio");
@@ -131,6 +153,9 @@ public class Menu {
         }
     }
 
+    /**
+     * Lê os dados de uma nova enfermaria e trata IllegalArgumentException, DataInvalidaException, CapacidadeExcedidaException e CamaOcupadaException.
+     */
     private void inserirEnfermaria() {
         System.out.println("\nNova Enfermaria:");
         System.out.println("1. Enfermaria Geral");
@@ -199,6 +224,9 @@ public class Menu {
         }
     }
 
+    /**
+     * Lê os dados de um novo episódio e trata DataInvalidaException, CapacidadeExcedidaException e CamaOcupadaException.
+     */
     private void inserirEpisodio() {
         List<Enfermaria> existentes = hospital.getEnfermarias();
         if (existentes.isEmpty()) {
@@ -407,6 +435,9 @@ public class Menu {
         }
     }
 
+    /**
+     * Mostra tabela alinhada com printf (Enfermaria, Data, Ocupadas, CamasTotais, %Ocup, Turnover%, Barra ASCII).
+     */
     private void mostrarTabelaOcupacao() {
         String idEnfermaria = leitor.lerString("ID da enfermaria: ");
         Enfermaria enfermaria = hospital.procurarEnfermaria(idEnfermaria);
@@ -451,6 +482,9 @@ public class Menu {
         }
     }
 
+    /**
+     * Mostra gráfico horizontal ou vertical com símbolo variável. O utilizador pode escolher entre três métricas clínicas: Taxa de Ocupação, Turnover e LoS Médio.
+     */
     private void mostrarGraficoBarras() {
         try {
             Data dataRef = DataAvancada.parseData(leitor.lerString("\nData de referência (AAAA-MM-DD): ")); //aqui guardamos a data numa variável do tipo Data e não DataAvancada, pois o método usado para a lista pede Data
@@ -527,7 +561,17 @@ public class Menu {
         }
     }
 
-
+    /**
+     * Gráfico de barras horizontais com proporção 50 carateres = 100%.
+     *
+     * @param enfermarias    enfermarias
+     * @param valoresMetrica valores da métrica já calculados
+     * @param tamanhosBarra  tamanhos das barras já calculados
+     * @param simbolo        #,+ ou *
+     * @param opcaoMetrica   Taxa de Ocupação, Turnover ou LoS Médio
+     * @param nomeMetrica    Taxa de Ocupação, Turnover ou LoS Médio
+     * @param dataRef        data de referencia
+     */
     private void graficoHorizontal(List<Enfermaria> enfermarias, double valoresMetrica[], int tamanhosBarra[], char simbolo, int opcaoMetrica, String nomeMetrica, Data dataRef) {
         System.out.println("\nGRÁFICO HORIZONTAL DE " + nomeMetrica + " (" + dataRef.toString() + ")\n");
         for (int i = 0; i < enfermarias.size(); i++) {
@@ -547,6 +591,16 @@ public class Menu {
         }
     }
 
+    /**
+     * Gráfico de barras verticais com eixo Y em percentagem (dias para o LoS médio) e IDs na legenda.
+     *
+     * @param enfermarias  enfermarias
+     * @param alturas      alturas das barras já calculados
+     * @param simbolo      #,+ ou *
+     * @param opcaoMetrica Taxa de Ocupação, Turnover ou LoS Médio
+     * @param nomeMetrica  Taxa de Ocupação, Turnover ou LoS Médio
+     * @param dataRef      data de referencia
+     */
     private void graficoVertical(List<Enfermaria> enfermarias, int[] alturas, char simbolo, int opcaoMetrica, String nomeMetrica, Data dataRef) {
         int numEnfermarias = enfermarias.size();
         int alturaMax = 0;
@@ -597,6 +651,10 @@ public class Menu {
         System.out.println("\n");
     }
 
+    /**
+     * Solicita uma percentagem de variação ao utilizador (positiva para aumentar, negativa para reduzir) e aplica-a ao número de camas de todas as enfermarias do hospital,
+     * chamando o metodo estático AnalisadorEstatístico.alterarCamas().
+     */
     private void alterarCamasEnfermarias() {
         System.out.println("ALTERAR CAMAS TOTAIS EM TODAS AS ENFERMARIAS");
         double percentagem = leitor.lerDouble("Introduza a percentagem de variação (ex: 10 para aumentar 10%, -5 para reduzir 5%):");
@@ -605,6 +663,10 @@ public class Menu {
         System.out.println("Camas alteradas com sucesso em todas as enfermarias.");
     }
 
+    /**
+     * Solicita uma data de referência ao utilizador e apresenta a lista de enfermarias ordenada de forma decrescente pelo Índice de Pressão, mostrando para cada uma o scoreOcup, scoreTurnover, índice calculado e classificação (Pressão Baixa, Moderada ou Alta),
+     * chamando o metodo estático AnalisadorEstatistico.calcularRankingPressao().
+     */
     private void mostrarRankingPressao() {
         try {
             System.out.println("\nRANKING DE ENFERMARIAS POR PRESSAO");
@@ -624,6 +686,10 @@ public class Menu {
         }
     }
 
+    /**
+     * Solicita uma data de referência ao utilizador e apresenta a percentagem de enfermarias com taxa de ocupação superior a 85% nessa data,
+     * chamando o metodo estático AnalisadorEstatistico.calcularPercentagemEnfermariasEmPressao().
+     */
     private void mostrarPercentagemPressao() {
         try {
             System.out.println("PERCENTAGEM DE ENFERMARIAS EM PRESSAO");
@@ -658,6 +724,13 @@ public class Menu {
         return opcao;
     }
 
+    /**
+     * Metodo auxiliar que gera a string da barra ASCII proporcional.
+     *
+     * @param taxa    a percentagem (0 a 100) que define o nível de preenchimento da barra
+     * @param simbolo #,+ ou *
+     * @return uma String contendo a barra formatada e delimitada por parênteses retos (ex: "[####      ]")
+     */
     private static String gerarBarraHorizontal(double taxa, char simbolo) {
         // 50 caracteres = 100%, por isso: taxa * 50 / 100
         int preenchidos = (int) (taxa * 50 / 100);

@@ -1,6 +1,6 @@
 /**
- * Representa uma enferamaria de cuidados intensivos (ECI)
- * Requer a gestao do horario de visitas bem como das pressoes atmosfericas atuais e de referencia
+ * Representa uma enfermaria de cuidados intensivos (ECI)
+ * Requer a gestao do horario de visitas bem como das pressoes atmosfericas atuais e de referência
  */
 public class EnfermariaCuidadosIntensivos extends Enfermaria {
 

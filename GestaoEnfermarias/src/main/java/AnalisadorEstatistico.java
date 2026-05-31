@@ -3,8 +3,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Classe com métodos estáticos para análise das enfermarias do hospital.
- * Requisitos Funcionais 4, 5 e 6 da Iteração II.
+ * Classe utilitária com métodos estáticos para análise das enfermarias do hospital.
+ * Responsavel por implementar calculos complexos, incluindo variaçao percentual de camas,
+ * cálculo de percentagem de pressao e geração do ranking do indice de pressao
  */
 public class AnalisadorEstatistico {
 
@@ -25,7 +26,9 @@ public class AnalisadorEstatistico {
     private static final double LIMITE_INDICE_MODERADO = 3.5;
 
     /**
-     * Req. Funcional 4 — Alteração percentual de camas.
+     * Metodo static que aplica uma variação percentual ao numCamas de todas as enfermarias. Garante que o resultado é sempre no mínimo 1.
+     * @param enfermarias a lista de enfermarias a serem atualizadas
+     * @param percentagem a percentagem de variação a aplicar (ex: 10.0 para aumentar 10%, -5.0 para reduzir 5%)
      */
     public static void alterarCamas(List<Enfermaria> enfermarias, double percentagem) {
         if (enfermarias == null) {
@@ -43,7 +46,10 @@ public class AnalisadorEstatistico {
     }
 
     /**
-     * Req. Funcional 5 — Percentagem de Enfermarias em pressão.
+     *  Metodo static que calcula a percentagem de enfermarias com taxa de ocupação superior a 85%.
+     * @param enfermarias lista de enfermarias a avaliar
+     * @param dataReferencia data de referencia
+     * @return percentagem de enfermarias em pressao
      */
     public static double calcularPercentagemEnfermariasEmPressao(List<Enfermaria> enfermarias, Data dataReferencia) {
         if (enfermarias == null || enfermarias.isEmpty()) {
@@ -69,6 +75,14 @@ public class AnalisadorEstatistico {
         private double indicePressao;
         private String classificacao;
 
+        /**
+         * Construtor do objeto que encapsula o resultado do cálculo de pressão.
+         * @param enfermaria enfermaria avaliada
+         * @param scoreOcup pontuaçao de 1 a 5 atribuida à taxa de ocupaçao
+         * @param scoreTurnover pontuaçao de 1 a 5 atribuida ao turnover
+         * @param indicePressao valor final calculado do indice de pressao
+         * @param classificacao classificaçao textual interpretada (Baixa, Moderada ou Alta)
+         */
         public ResultadoPressao(Enfermaria enfermaria, int scoreOcup, int scoreTurnover, double indicePressao, String classificacao) {
             this.enfermaria = enfermaria;
             this.scoreOcup = scoreOcup;
@@ -78,33 +92,66 @@ public class AnalisadorEstatistico {
         }
 
         // --- GETTERS NECESSÁRIOS PARA OS TESTES ---
+
+        /**
+         * metodo getter
+         * @return enfermaria avaliada
+         */
         public Enfermaria getEnfermaria() {
             return enfermaria;
         }
 
+        /**
+         * metodo getter
+         * @return pontuaçao atribuida à taxa de ocupaçao
+         */
         public int getScoreOcup() {
             return scoreOcup;
         }
 
+        /**
+         * metodo getter
+         * @return pontuaçao atribuida ao turnover
+         */
         public int getScoreTurnover() {
             return scoreTurnover;
         }
 
+        /**
+         * metodo getter
+         * @return indice de pressao calculado
+         */
         public double getIndicePressao() {
             return indicePressao;
         }
 
+        /**
+         * metodo getter
+         * @return classifcaçao textual do estado de pressao
+         */
         public String getClassificacao() {
             return classificacao;
         }
         // ------------------------------------------
 
         // Ordenação Decrescente pelo Índice
+
+        /**
+         *Compara este resultado com outro para efeitos de ordenação nas listagens.
+         * A comparação é feita de forma decrescente com base no valor do Índice de Pressão.
+         * @param outro o outro objeto ResultadoPressao com o qual se vai comparar
+         * @return um valor negativo, zero ou positivo consoante este índice seja maior, igual ou menor que o do outro objeto
+         */
         @Override
         public int compareTo(ResultadoPressao outro) {
             return Double.compare(outro.indicePressao, this.indicePressao);
         }
 
+        /**
+         *Devolve uma representação textual perfeitamente formatada e alinhada dos resultados
+         * do cálculo de pressão para exibição na consola.
+         * @return uma String contendo o ID da enfermaria, os scores parcelares, o índice final e a classificação textual
+         */
         @Override
         public String toString() {
             return String.format("Enfermaria: %-8s | scoreOcup=%d | scoreTurnover=%d | índice=%.1f | %s",
@@ -113,7 +160,10 @@ public class AnalisadorEstatistico {
     }
 
     /**
-     * Req. Funcional 6 — Índice de Pressão e Ranking.
+     * Calcula o indice de pressao para cada enfermaria fornecida e devolve o respetivo ranking
+     * @param enfermarias enfermarias a avaliar
+     * @param dataReferencia data de referencia
+     * @return lista de objs ResultadoPressao ordenada de forma decrescente
      */
     public static List<ResultadoPressao> calcularRankingPressao(List<Enfermaria> enfermarias, Data dataReferencia) {
         List<ResultadoPressao> ranking = new ArrayList<>();
